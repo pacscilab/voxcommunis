@@ -1,7 +1,7 @@
 # vox-communis-2022-lrec
-Code to create resources (acoustic models, TextGrids with word and phone alignments, and formants) derived from the Common Voice Corpus described in LREC 2022 version of the VoxCommunis corpus. For more current updates, refer to github.com/echodroff/vox-communis and osf.io/t957v/
+Code to create resources (acoustic models, TextGrids with word and phone alignments, and formants) derived from the Common Voice Corpus described in LREC 2022 version of the VoxCommunis corpus. For more current updates, please refer to github.com/pacscilab/vox-communis and osf.io/t957v/
 
-Ahn, E., & Chodroff, E. (2022, June). VoxCommunis: A corpus for cross-linguistic phonetic analysis. In Proceedings of the Thirteenth Language Resources and Evaluation Conference (pp. 5286-5294).
+Ahn, E., & Chodroff, E. (2022, June). VoxCommunis: A corpus for cross-linguistic phonetic analysis. In Proceedings of the Thirteenth Language Resources and Evaluation Conference (pp. 5286-5294). https://aclanthology.org/2022.lrec-1.566.pdf 
 
 ## Common Voice Processing Instructions
 **Prep files and generate lexicon, acoustic model, forced alignment**
