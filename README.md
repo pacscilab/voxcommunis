@@ -1,5 +1,5 @@
 # vox-communis-2022-lrec
-Code to create resources (acoustic models, TextGrids with word and phone alignments, and formants) derived from the Common Voice Corpus described in LREC 2022 version of the VoxCommunis corpus. For more current updates, please refer to github.com/pacscilab/vox-communis and osf.io/t957v/
+Code to create resources (acoustic models, TextGrids with word and phone alignments, and formants) derived from the Common Voice Corpus described in LREC 2022 version of the VoxCommunis corpus. For more current updates, please refer to https://github.com/pacscilab/voxcommunis and https://osf.io/t957v/ (DOI 10.17605/OSF.IO/T957V)
 
 Ahn, E., & Chodroff, E. (2022, June). VoxCommunis: A corpus for cross-linguistic phonetic analysis. In Proceedings of the Thirteenth Language Resources and Evaluation Conference (pp. 5286-5294). https://aclanthology.org/2022.lrec-1.566.pdf 
 
@@ -88,5 +88,5 @@ mfa train --clean ~/Documents/CommonVoice/languages/indonesian/validated indones
 mfa align ~/Documents/CommonVoice/languages/indonesian/validated indonesian_lexicon indonesian_cv10 ~/Documents/CommonVoice/languages/indonesian/output/
 ```
 
-## Notes about the 2021 analysis
-The formant data we used in the VoxCommunis 2021 LREC paper is in vox-communis-2021-analysis/data/formants_narrow/. These files contain the average F1 and F2 for each speaker and "narrowly defined" vowel in the language. A "narrowly defined" vowel means that we retained all vowels but collapsed across tones. The set of broadly defined vowels in vox-communis-2021-analysis/data/formants_broad means that we collapsed vowels across tone, length, and nasality. Each speaker was classified as having a high or low formant extraction setting based on the lesser Mahalonobis-distance of their overall F1/F2 average to the overall language-specific F1 and F2 means. More information about speaker formant setting assignment can be found in the outliers repo from Emily P. Ahn here: https://github.com/emilyahn/outliers. 
+## Notes about the 2022 analysis
+The formant data we used in the VoxCommunis 2022 LREC paper is in data/formants_narrow/. These files contain the average F1 and F2 for each speaker and "narrowly defined" vowel in the language. A "narrowly defined" vowel means that we retained all vowels but collapsed across tones. The set of broadly defined vowels in formants_broad means that we collapsed vowels across tone, length, and nasality. Each speaker was classified as having a high or low formant extraction setting based on the lesser Mahalonobis distance of their overall F1/F2 average to the overall language-specific F1 and F2 means. The setting for each speaker in the present analysis can be found in data/settings_highlow.tsv. More information about speaker formant setting assignment can be found in the outliers repo from Emily P. Ahn here: https://github.com/emilyahn/outliers. 
