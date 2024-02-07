@@ -1,0 +1,144 @@
+,code_update,code_cv,name_cv,name_iso639-3,name_xpf,name_epi,totalHrs,validHrs,xpf,code_xpf,epitran,code_epi
+0,abk,ab,Abkhaz,Abkhazian,Abkhaz,,84.4,58.83,yes,ab,,
+1,afr,af,Afrikaans,Afrikaans,,,0.34,0.1,,,,
+2,amh,am,Amharic,Amharic,,Amharic,2.04,1.25,,,yes,amh-Ethi
+3,amh,am,Amharic,Amharic,,Amharic,2.04,1.25,,,yes,amh-Ethi-pp
+4,amh,am,Amharic,Amharic,,Amharic,2.04,1.25,,,yes,amh-Ethi-red
+5,ara,ar,Arabic,Arabic,Arabic,Literary Arabic,155.3,89.95,compromised,ar,yes,ara-Arab
+6,asm,as,Assamese,Assamese,,,3.27,2.71,,,,
+7,ast,ast,Asturian,Asturian,Asturian,,1.85,0.79,yes,ast,,
+8,aze,az,Azerbaijani,Azerbaijani,Azerbaijani,Azerbaijani,0.44,0.15,yes,az,yes,aze-Cyrl
+9,aze,az,Azerbaijani,Azerbaijani,Azerbaijani,Azerbaijani,0.44,0.15,yes,az,yes,aze-Latn
+10,bak,ba,Bashkir,Bashkir,Bashkir,,267.5,248.83,yes,ba,,
+11,bas,bas,Basaa,Basa (Cameroon),,,2.81,2.15,,,,
+12,bel,be,Belarusian,Belarusian,Belarusan,,1693.55,1640.08,yes,be,,
+13,ben,bn,Bengali,Bengali,,Bengali,1271.91,53.34,,,yes,ben-Beng
+14,ben,bn,Bengali,Bengali,,Bengali,1271.91,53.34,,,yes,ben-Beng-red
+15,bre,br,Breton,Breton,,,26.39,12.83,,,,
+16,bul,bg,Bulgarian,Bulgarian,Bulgarian,,20.29,13.78,yes,bg,,
+17,cat,ca,Catalan,Catalan,Catalan,Catalan,3499.2,2648.61,compromised,ca,yes,cat-Latn
+18,ces,cs,Czech,Czech,Czech,Czech,260.93,72.94,yes,cs,yes,ces-Latn
+19,chv,cv,Chuvash,Chuvash,Chuvash,,27.5,24.29,yes,cv,,
+20,ckb,ckb,Central Kurdish,Central Kurdish,,Sorani,131.02,111.8,,,yes,ckb-Arab
+21,cnh,cnh,Hakha Chin,Hakha Chin,,,6.04,2.4,,,,
+22,cym,cy,Welsh,Welsh,,,155.12,122.04,,,,
+23,dan,da,Danish,Danish,,,12.51,11.57,,,,
+24,deu,de,German,German,,German,1402.67,1304.01,,,yes,deu-Latn
+25,deu,de,German,German,,German†,1402.67,1304.01,,,yes,deu-Latn-np
+26,deu,de,German,German,,German,1402.67,1304.01,,,yes,deu-Latn-nar
+27,div,dv,Dhivehi,Dhivehi,Maldivian,,64.15,38.73,yes,dv,,
+28,dyu,dyu,Dioula,Dyula,,,0.4,0.21,,,,
+29,ell,el,Greek,Modern Greek (1453-),Greek,,31.19,17.71,yes,el,,
+30,eng,en,English,English,,English‡,3437.49,2569.19,,,yes,eng-Latn
+31,epo,eo,Esperanto,Esperanto,,,1900.29,1411.02,,,,
+32,est,et,Estonian,Estonian,,,59.94,45.56,,,,
+33,eus,eu,Basque,Basque,Basque,,582.9,208.97,yes,eu,,
+34,fas,fa,Persian,Persian,,Farsi,409.2,357.02,,,yes,fas-Arab
+35,fin,fi,Finnish,Finnish,,,19.7,11.89,,,,
+36,fra,fr,French,French,,French,1112.54,980.9,,,yes,fra-Latn
+37,fra,fr,French,French,,French†,1112.54,980.9,,,yes,fra-Latn-np
+38,fra,fr,French,French,,French,1112.54,980.9,,,yes,fra-Latn-p
+39,fry-NL,fy-NL,Frisian,Western Frisian,,,211.32,65.95,,,,
+40,gle-IE,ga-IE,Irish,Irish,,,10.28,4.82,,,,
+41,glg,gl,Galician,Galician,,,63.35,37.57,,,,
+42,grn,gn,Guarani,Guarani,Guarani,,27.56,3.66,yes,gn,,
+43,hau,ha,Hausa,Hausa,,Hausa,12.17,3.94,,,yes,hau-Latn
+44,heb,he,Hebrew,Hebrew,,,3.48,1.15,,,,
+45,hin,hi,Hindi,Hindi,Hindi,Hindi,20.05,13.93,compromised,hi,yes,hin-Deva
+46,hsb,hsb,"Sorbian, Upper",Upper Sorbian,Upper Sorbian,,3.02,2.43,yes,hsb,,
+47,hun,hu,Hungarian,Hungarian,Hungarian,Hungarian,170.13,90.15,yes,hu,yes,hun-Latn
+48,hye-AM,hy-AM,Armenian,Armenian,Armenian,,23.6,13.18,yes,hy,,
+49,ibo,ig,Igbo,Igbo,,,8.76,0.02,,,,
+50,ina,ia,Interlingua,Interlingua (International Auxiliary Language Association),,,16.95,13.55,,,,
+51,ind,id,Indonesian,Indonesian,Indonesian,Indonesian,63.82,28.68,compromised,id,yes,ind-Latn
+52,isl,is,Icelandic,Icelandic,,,0.03,0.02,,,,
+53,ita,it,Italian,Italian,,Italian,388.26,327.61,,,yes,ita-Latn
+54,jpn,ja,Japanese,Japanese,,,453.2,115.8,,,,
+55,kab,kab,Kabyle,Kabyle,,,688.81,556.82,,,,
+56,kat,ka,Georgian,Georgian,Georgian,,161.45,117.79,yes,ka,,
+57,kaz,kk,Kazakh,Kazakh,Kazakh,Kazakh,3.34,2.09,compromised,kk,yes,kaz-Cyrl
+58,kaz,kk,Kazakh,Kazakh,Kazakh,Kazakh,3.34,2.09,compromised,kk,yes,kaz-Cyrl-bab
+59,kaz,kk,Kazakh,Kazakh,Kazakh,Kazakh,3.34,2.09,compromised,kk,yes,kaz-Latn
+60,kin,rw,Kinyarwanda,Kinyarwanda,,Kinyarwanda,2383.98,1998.8,,,yes,kin-Latn
+61,kir,ky,Kyrgyz,Kirghiz,Kirghiz,Kyrgyz,45.88,37.21,yes,ky,yes,kir-Arab
+62,kir,ky,Kyrgyz,Kirghiz,Kirghiz,Kyrgyz,45.88,37.21,yes,ky,yes,kir-Cyrl
+63,kir,ky,Kyrgyz,Kirghiz,Kirghiz,Kyrgyz,45.88,37.21,yes,ky,yes,kir-Latn
+64,kmr,kmr,Kurmanji Kurdish,Northern Kurdish,,Kurmanji,98.27,59.19,,,yes,kmr-Latn
+65,kmr,kmr,Kurmanji Kurdish,Northern Kurdish,,Kurmanji,98.27,59.19,,,yes,kmr-Latn-red
+66,kor,ko,Korean,Korean,Korean,,4.94,1.47,yes,ko,,
+67,lao,lo,Lao,Lao,,Lao,0.34,0.17,,,yes,lao-Laoo
+68,lav,lv,Latvian,Latvian,,,245.45,163.97,,,,
+69,lij,lij,Ligurian,Ligurian,,Ligurian,2.67,2.19,,,yes,lij-Latn
+70,lit,lt,Lithuanian,Lithuanian,,,25.17,23.28,,,,
+71,ltg,ltg,Latgalian,Latgalian,,,14.64,8.08,,,,
+72,lug,lg,Luganda,Ganda,,,559.02,420.79,,,,
+73,mal,ml,Malayalam,Malayalam,Malayalam,Malayalam,9.87,3.28,compromised,ml,yes,mal-Mlym
+74,mar,mr,Marathi,Marathi,,Marathi,27.46,18.71,,,yes,mar-Deva
+75,mdf,mdf,Moksha,Moksha,,,0.5,0.48,,,,
+76,mhr,mhr,Meadow Mari,Eastern Mari,,,280.17,263.42,,,,
+77,mkd,mk,Macedonian,Macedonian,Macedonian,,0.31,0.29,yes,mk,,
+78,mlt,mt,Maltese,Maltese,Maltese,Maltese,17.21,8.46,compromised,mt,yes,mlt-Latn
+79,mon,mn,Mongolian,Mongolian,,Mongolian,21.38,12.99,,,yes,mon-Cyrl
+80,mrj,mrj,Hill Mari,Western Mari,,,35.08,33.0,,,,
+81,myv,myv,Erzya,Erzya,Erzya,,3.19,3.15,compromised,myv,,
+82,nan-tw,nan-tw,Taiwanese (Minnan),,,Hokkien,19.97,5.47,,,yes,nan-Latn
+83,nan-tw,nan-tw,Taiwanese (Minnan),,,Hokkien,19.97,5.47,,,yes,nan-Latn-tl
+84,nep-NP,ne-NP,Nepali,Nepali (macrolanguage),Nepali,,1.35,0.77,yes,ne,,
+85,nhi,nhi,Western Sierra Puebla Nahuatl,Zacatlán-Ahuacatlán-Tepetzintla Nahuatl,,,0.03,0.01,,,,
+86,nld,nl,Dutch,Dutch,,Dutch,118.36,108.57,,,yes,nld-Latn
+87,nno-NO,nn-NO,Norwegian Nynorsk,Norwegian Nynorsk,,,1.6,1.25,,,,
+88,oci,oc,Occitan,Occitan (post 1500),,,12.56,1.64,,,,
+89,ori,or,Odia,Oriya (macrolanguage),Oriya,Odia,12.42,4.33,yes,or,yes,ori-Orya
+90,oss,os,Ossetian,Ossetian,Ossetic,,0.29,0.2,compromised,os,,
+91,pan-IN,pa-IN,Punjabi,Panjabi,,Punjabi,3.98,2.01,,,yes,pan-Guru
+92,pol,pl,Polish,Polish,,Polish,174.34,161.62,,,yes,pol-Latn
+93,por,pt,Portuguese,Portuguese,,Portuguese,207.32,170.62,,,yes,por-Latn
+94,pus,ps,Pashto,Pushto,,,1.71,1.65,,,,
+95,quy,quy,Quechua Chanka,Ayacucho Quechua,,,0.01,0.0,,,,
+96,roh-sursilv,rm-sursilv,Romansh Sursilvan,Romansh,,,10.9,6.47,,,,
+97,roh-vallader,rm-vallader,Romansh Vallader,Romansh,,,4.25,2.46,,,,
+98,ron,ro,Romanian,Romanian,Romanian,Romanian,45.91,19.35,yes,ro,yes,ron-Latn
+99,rus,ru,Russian,Russian,,Russian,264.05,230.37,,,yes,rus-Cyrl
+100,sah,sah,Sakha,Yakut,Yakut,,11.34,8.07,compromised,sah,,
+101,sat,sat,Santali (Ol Chiki),Santali,,,1.02,0.57,,,,
+102,skr,skr,Saraiki,Saraiki,,,6.58,4.17,,,,
+103,slk,sk,Slovak,Slovak,Slovak,,26.34,19.14,compromised,sk,,
+104,slv,sl,Slovenian,Slovenian,,,14.75,11.11,,,,
+105,spa,es,Spanish,Spanish,Spanish,Spanish,2204.26,540.62,yes,es,yes,spa-Latn
+106,spa,es,Spanish,Spanish,Spanish,Spanish,2204.26,540.62,yes,es,yes,spa-Latn-eu
+107,sqi,sq,Albanian,Albanian,Albanian,Albanian,1.59,1.57,yes,sq,yes,sqi-Latn
+108,srd,sc,Sardinian,Sardinian,,,1.91,1.46,,,,
+109,srp,sr,Serbian,Serbian,,,6.42,4.0,,,,
+110,swa,sw,Swahili,Swahili (macrolanguage),Swahili,Swahili,1080.44,396.26,compromised,sw,yes,swa-Latn
+111,swa,sw,Swahili,Swahili (macrolanguage),Swahili,Swahili,1080.44,396.26,compromised,sw,yes,swa-Latn-red
+112,swe-SE,sv-SE,Swedish,Swedish,,Swedish,53.95,44.78,,,yes,swe-Latn
+113,tam,ta,Tamil,Tamil,Tamil,Tamil,394.01,228.38,yes,ta,yes,tam-Taml
+114,tam,ta,Tamil,Tamil,Tamil,Tamil,394.01,228.38,yes,ta,yes,tam-Taml-red
+115,tat,tt,Tatar,Tatar,Tatar,,30.95,30.35,yes,tt,,
+116,tel,te,Telugu,Telugu,Telugu,Telugu,0.45,0.13,yes,te,yes,tel-Telu
+117,tha,th,Thai,Thai,,Thai,420.91,170.23,,,yes,tha-Thai
+118,tig,tig,Tigre,Tigre,,,0.45,0.05,,,,
+119,tir,ti,Tigrinya,Tigrinya,,Tigrinya,0.1,0.03,,,yes,tir-Ethi
+120,tir,ti,Tigrinya,Tigrinya,,Tigrinya,0.1,0.03,,,yes,tir-Ethi-pp
+121,tir,ti,Tigrinya,Tigrinya,,Tigrinya,0.1,0.03,,,yes,tir-Ethi-red
+122,tok,tok,Toki Pona,Toki Pona,,,16.92,12.64,,,,
+123,tuk,tk,Turkmen,Turkmen,,Turkmen,5.2,2.56,,,yes,tuk-Cyrl
+124,tuk,tk,Turkmen,Turkmen,,Turkmen,5.2,2.56,,,yes,tuk-Latn
+125,tur,tr,Turkish,Turkish,Turkish,Turkish,117.08,112.3,yes,tr,yes,tur-Latn
+126,tur,tr,Turkish,Turkish,Turkish,Turkish,117.08,112.3,yes,tr,yes,tur-Latn-bab
+127,tur,tr,Turkish,Turkish,Turkish,Turkish,117.08,112.3,yes,tr,yes,tur-Latn-red
+128,twi,tw,Twi,Twi,,,0.26,0.05,,,,
+129,uig,ug,Uyghur,Uighur,Uyghur,Uyghur,179.84,141.77,yes,ug,yes,uig-Arab
+130,ukr,uk,Ukrainian,Ukrainian,Ukrainian,Ukranian,107.27,95.45,yes,uk,yes,ukr-Cyrl
+131,urd,ur,Urdu,Urdu,,Urdu,231.69,63.11,,,yes,urd-Arab
+132,uzb,uz,Uzbek,Uzbek,Uzbek,Uzbek,263.05,99.49,yes,uz,yes,uzb-Cyrl
+133,uzb,uz,Uzbek,Uzbek,Uzbek,Uzbek,263.05,99.49,yes,uz,yes,uzb-Latn
+134,vie,vi,Vietnamese,Vietnamese,Vietnamese,Vietnamese,18.7,5.36,yes,vi,yes,vie-Latn
+135,vot,vot,Votic,Votic,,,0.28,0.06,,,,
+136,yid,yi,Yiddish,Yiddish,Yiddish,,0.04,0.04,yes,yi,,
+137,yor,yo,Yoruba,Yoruba,,Yoruba,7.28,5.0,,,yes,yor-Latn
+138,yue,yue,Cantonese,Yue Chinese,,,174.74,22.54,,,,
+139,zgh,zgh,Tamazight,Standard Moroccan Tamazight,,,0.25,0.24,,,,
+140,zho-CN,zh-CN,Chinese (China),Chinese,,,1059.64,228.87,,,,
+141,zho-HK,zh-HK,Chinese (Hong Kong),Chinese,,,138.0,107.13,,,,
+142,zho-TW,zh-TW,Chinese (Taiwan),Chinese,,,125.53,76.72,,,,
