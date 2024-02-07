@@ -1,0 +1,6 @@
+File,Example,Schema,Python_code
+Acoustic models,hsb_xpf_acoustic07-sub312.zip,(languageCode)_(G2P)_acoustic(version)-(branch).zip,lang_code + '_' + g2p + '_' + 'acoustic' + cv_version + '.zip'
+TextGrids,hsb_xpf_textgrids15_acoustics07-sub312.zip,(languageCode)_(G2P)_textgrids(version)_(model).zip,lang_code + '_' + g2p + '_textgrids' + cv_version + '_' + acoustic + cv_version + '.zip'
+Wordlist,hsb_xpf_wordlist15.txt,(languageCode)_(G2P)_wordlist(version).txt,lang_code + '_' + g2p + '_wordlist' + cv_version + '.txt'
+Lexicon,hsb_xpf_lexicon15.txt,(languageCode)_(G2P)_lexicon(version).txt,lang_code + '_' + g2p + '_lexicon' + cv_version + '.txt'
+Spkr_files,hsb_xpf_spkr15.csv,(languageCode)_(G2P)_spkr(version).csv,lang_code + '_' + g2p + '_spkr' + cv_version + '.tsv'

@@ -1,4 +1,0 @@
-Acoustic models:    hsb_xpf_acoustic07-sub312.zip                   (languageCode)_(G2P)_acoustic(version)-(branch).zip
-TextGrids:          hsb_xpf_textgrids15_acoustics07-sub312.zip      (languageCode)_(G2P)_textgrids(version)_(model).zip
-Lexicon:            hsb_xpf_lexicon15.txt                           (languageCode)_(G2P)_lexicon(version).txt
-Spkr files:         hsb_xpf_spkr15.csv                              (languageCode)_(G2P)_spkr(version).csv
