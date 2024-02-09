@@ -16,7 +16,7 @@ The `vxc_pipeline` contains the script to run the data processing pipeline `vxc_
 
 - `vxc_naming_schema.csv`: to setup the file names of the pipeline output.
 - `vxc_remap_spkrs.py`: to remap the client ID from Common Voice to speaker IDs of VoxCommunis.
-- `createTextGridsWav.praat`: to create .wav and .TextGrid files for the validated recordings from Common Voice.
+- `vxc_createTextGridsWav.praat`: to create .wav and .TextGrid files for the validated recordings from Common Voice.
 - `epi_run.py` or `xpf_translator04.py`: to create a pronunciation lexicon for VoxCommunis based on the Common Voice transcripts. The former runs `Epitran` while the latter runs `XPF` translator.
 
 If you want to use the G2P models from Epitran, you will need to download and install the package first (`pip install epitran`).
