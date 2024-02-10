@@ -19,7 +19,7 @@ The `vxc_pipeline` contains the script to run the data processing pipeline `vxc_
 - `vxc_createTextGridsWav.praat`: to create .wav and .TextGrid files for the validated recordings from Common Voice.
 - `epi_run.py` or `xpf_translator04.py`: to create a pronunciation lexicon for VoxCommunis based on the Common Voice transcripts. The former runs `Epitran` while the latter runs `XPF` translator.
 
-If you want to use the G2P models from Epitran, you will need to download and install the package first (`pip install epitran`).
+If you want to use the G2P models from Epitran, you will need to download and install the package first (`pip install epitran`). If you want to use XPF, you will need to download the [XPF data](https://github.com/CohenPr-XPF/XPF/tree/master/Data) and save it on your computer.
  
 ## The output
 
