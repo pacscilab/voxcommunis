@@ -4,7 +4,7 @@ This repository contains the code for generating files in the VoxCommunis Corpus
 
 ## The scripts
 
-The `vxc_lang_code_processing` folder contains the script `vxc_process_lang_codes.ipynb` to generate the file `VoxCommunis_Info.csv` which logs the language name/code (as used in [Common Voice](https://commonvoice.mozilla.org/en/datasets), [XPF corpus]([https://www.urielcohenpriva.com/xpf.html](https://cohenpr-xpf.github.io/XPF/)), and [Epitran](https://pypi.org/project/epitran/)), and numbers of hours of recordings for each language from [Common Voice](https://commonvoice.mozilla.org/en/datasets). The `VoxCommunis_tracking.csv` logs the updates of pronunciation lexicons, speaker IDs, and the acoustic models for each language, which will be manually updated. To run `vxc_process_lang_codes.ipynb`, five files are needed:
+The `vxc_lang_code_processing` folder contains the script `vxc_process_lang_codes.ipynb` to generate the file `VoxCommunis_Info.csv` which logs the language name/code (as used in [Common Voice](https://commonvoice.mozilla.org/en/datasets), [XPF corpus](https://cohenpr-xpf.github.io/XPF/), and [Epitran](https://pypi.org/project/epitran/)), and numbers of hours of recordings for each language from [Common Voice](https://commonvoice.mozilla.org/en/datasets). The `VoxCommunis_tracking.csv` logs the updates of pronunciation lexicons, speaker IDs, and the acoustic models for each language, which will be manually updated. To run `vxc_process_lang_codes.ipynb`, five files are needed:
 
 - `cv_languages.py`: contains the language name and code from Common Voice.
 - `cv_release_stats.py`: contains the release information of each language in Common Voice.
