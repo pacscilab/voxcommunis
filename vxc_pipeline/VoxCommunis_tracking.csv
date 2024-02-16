@@ -1,5 +1,5 @@
 code_cv,name_cv,spkr_file,lexicon,acoustic_model
-ab,Abkhaz,,,
+ab,Abkhaz,ab_xpf_spkr16.tsv,ab_xpf_lexicon16.txt,ab_xpf_acoustic16.zip
 af,Afrikaans,,,
 am,Amharic,,,
 ar,Arabic,,,
@@ -20,7 +20,7 @@ cnh,Hakha Chin,,,
 cy,Welsh,,,
 da,Danish,,,
 de,German,,,
-dv,Dhivehi,,,
+dv,Dhivehi,dv_xpf_spkr16.tsv,dv_xpf_lexicon16.txt,dv_xpf_acoustic16.zip
 dyu,Dioula,,,
 el,Greek,,,
 en,English,,,
@@ -76,7 +76,7 @@ nn-NO,Norwegian Nynorsk,,,
 oc,Occitan,,,
 or,Odia,,,
 os,Ossetian,,,
-pa-IN,Punjabi,,,
+pa-IN,Punjabi,pa-IN_epi_spkr16.tsv,pa-IN_epi_lexicon16.txt,pa-IN_epi_acoustic16.zip
 pl,Polish,,,
 pt,Portuguese,,,
 ps,Pashto,,,
