@@ -1,6 +1,8 @@
 import sys
 import csv
 
+csv.field_size_limit(sys.maxsize)
+
 # written by Emily P. Ahn for VoxCommunis
 # 2021
 # remap Common Voice client_id to a simpler speaker_id (in order of appearance)
@@ -10,10 +12,11 @@ import csv
 #	python q_remap_comvoi_spkrs.py {tsv_infile} {tsv_outfile}
 #	ex: py src/q_remap_comvoi_spkrs.py data/comvoi/uzbek/docs/validated.tsv data/comvoi/uzbek/docs/validated_spkr.tsv
 
+# modified by Miao Zhang to increase the maximal size of the csv file field.
+
 
 cv_in_tsvfile = sys.argv[1]
 cv_out_tsvfile = sys.argv[2]
-
 
 with open(cv_in_tsvfile, newline='') as csvfile:
 	reader = csv.DictReader(csvfile, delimiter='\t')
