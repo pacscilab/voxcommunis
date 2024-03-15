@@ -1,7 +1,4 @@
-import epitran
-import csv
-import re
-import sys
+import epitran, jamo, csv, re, sys, g2pk
 
 # written by Emily P. Ahn for VoxCommunis
 # 2021
