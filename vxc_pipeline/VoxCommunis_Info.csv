@@ -133,7 +133,7 @@ Unnamed: 0,code_cv,name_cv,name_iso639-3,name_xpf,name_epi,clips,validClips,tota
 131,ur,Urdu,Urdu,,Urdu,197655,53840,231.69,63.11,,,yes,urd-Arab,,,
 132,uz,Uzbek,Uzbek,Uzbek,Uzbek,228312,86351,263.05,99.49,yes,uz,yes,uzb-Cyrl,,,
 133,uz,Uzbek,Uzbek,Uzbek,Uzbek,228312,86351,263.05,99.49,yes,uz,yes,uzb-Latn,,,
-134,vi,Vietnamese,Vietnamese,Vietnamese,Vietnamese,17341,4975,18.7,5.36,yes,vi,yes,vie-Latn,vi_epi_spkr16.tsv,vi_epi_lexicon16.txt,
+134,vi,Vietnamese,Vietnamese,Vietnamese,Vietnamese,17341,4975,18.7,5.36,yes,vi,yes,vie-Latn,vi_epi_spkr16.tsv,vi_epi_lexicon16.txt,vi_epi_acoustic16.zip
 135,vot,Votic,Votic,,,427,102,0.28,0.06,,,,,,,
 136,yi,Yiddish,Yiddish,Yiddish,,44,43,0.04,0.04,yes,yi,,,,,
 137,yo,Yoruba,Yoruba,,Yoruba,4473,3075,7.28,5.0,,,yes,yor-Latn,,,
