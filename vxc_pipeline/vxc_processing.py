@@ -2,6 +2,7 @@ import re, csv, subprocess, unicodedata, os, shutil
 import pandas as pd
 import numpy as np
 from praatio import textgrid
+from pathlib import Path
 
 ##########################################################################################################
 ##########################################################################################################
@@ -66,7 +67,7 @@ def remap_spkr(lang_dir, path_sep, spkr_file_path):
         (
             ((whole['validation'] == 'validated') & (whole['dur'] <= 1)) |
             (whole['sentence'] == '') |
-            (isinstance(whole['sentence'], float)) |
+            (whole['sentence'].isna()) |
             (whole['sentence'].str.contains('common_voice', regex=True))
             ),
     ]
@@ -115,15 +116,18 @@ def create_textgrid(snd_file, dur, speaker_id, transcript):
                                         dur) # end time
     tg.addTier(speaker_tier)
     # Save the TextGrid to a file
-    tg_filename = snd_file.replace('.mp3', '.TextGrid')
+    snd_path = Path(snd_file)
+    tg_filename = snd_path.with_suffix('.TextGrid')
     tg.save(tg_filename, format='short_textgrid', includeBlankSpaces=True)
 
 def move_and_create_tg(df):
     for src_mp3_path, new_path, speaker, dur, transcript, validation in zip(df.src_path, df.new_path, df.speaker_id, df.dur, df.sentence, df.validation):
+        src_mp3_path = Path(src_mp3_path)
+        new_path = Path(new_path)
         # Copy sound file and crate the textgrid file  
-        if validation != 'invalidated' and os.path.exists(src_mp3_path):
+        if validation != 'invalidated' and src_mp3_path.exists():
             shutil.move(src_mp3_path, new_path)
-            tg_filename = new_path.replace('.mp3', '.TextGrid')
+            tg_filename = new_path.with_suffix('.TextGrid')
             if validation == 'other' or isinstance(transcript, float):
                 os.remove(new_path)
             elif not os.path.exists(tg_filename):
@@ -143,7 +147,7 @@ def process_words(validated_log):
     words = words[words['sentence'].notnull()]['sentence']
 
     # Remove the punctuations
-    words = words.str.replace('[›|‹|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|:|”|؟|&|\%|…|\t| \' ]+', ' ', regex=True)
+    words = words.str.replace('[›|‹|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t| \' ]+', ' ', regex=True)
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers
@@ -175,16 +179,6 @@ def process_words(validated_log):
 ############################################################
 
 # Functions:
-# Filter out unwanted Latin letter texts (Like latin-letter words in cyrillic texts)
-def is_cyrillic_letter(char):
-    # Check if the character is a Cyrillic letter
-    return char.isalpha() and 'а' <= char <= 'я'
-def remove_non_cyrl(cyrillic_words):
-    # Use list comprehension to filter out words containing non-Cyrillic letters
-    filtered_words = [word for word in cyrillic_words if all(is_cyrillic_letter(char) for char in word)]
-    filtered_words = list(filter(None, filtered_words))
-    return filtered_words
-
 # Filter Abkhaz
 def is_abkhaz_word(word):
     abkhaz_characters = {'а', 'аҧ', 'б', 'в', 'г', 'гь', 'д', 'е', 'еи', 'еӡ', 'ж', 'з', 'и', 'иҭ', 'иҵ', 'й', 
@@ -207,6 +201,27 @@ def is_dutch_word(word):
 def remove_non_dutch(word_list):
     dutch_word_list = [word for word in word_list if is_dutch_word(word)]
     return dutch_word_list
+
+# Filter indonesian
+def contains_indonesian_letters(word):
+    # Define Unicode character ranges for Indonesian letters
+    indonesian_alphabet_ranges = [
+        (0x0041, 0x005A),  # Latin uppercase letters A-Z
+        (0x0061, 0x007A),  # Latin lowercase letters a-z
+        (0x00C0, 0x00FF),  # Latin extended-A letters with diacritics
+        (0x0100, 0x017F),  # Latin extended-B letters with diacritics
+    ]
+    # Check if all characters in the word fall within the defined ranges
+    for char in word:
+        char_code = ord(char)
+        if not any(start <= char_code <= end for start, end in indonesian_alphabet_ranges):
+            return False
+    return True
+def remove_non_ind(word_list):
+    ind_word_list = [word for word in word_list if contains_indonesian_letters(word)]
+    return ind_word_list
+
+
 
 
 # Filter Hausa
@@ -246,19 +261,6 @@ def remove_cjk(words):
 
 
 
-# Filter out unwanted non-Latin letters
-import unicodedata
-def has_non_latin_letters(word):
-    # Check if the word contains any non-Latin letters
-    return any(not unicodedata.category(char).startswith('L') for char in word)
-def remove_non_latin(words):
-    # Use list comprehension to filter out words with non-Latin letters
-    filtered_words = [word for word in words if not has_non_latin_letters(word)]
-    filtered_words = list(filter(None, filtered_words))
-    return filtered_words
-
-
-
 # Filter out non-Greek words
 def is_greek_letter(char):
     # Check if the character is a Greek letter
@@ -268,6 +270,54 @@ def remove_non_greek(greek_words):
     filtered_words = [word for word in greek_words if all(is_greek_letter(char) for char in word)]
     filtered_words = list(filter(None, filtered_words))
     return filtered_words
+
+# Filter out non-Hungarian
+def contains_hungarian_letters(word):
+    # Hungarian alphabet consists of characters from a-z, A-Z, and á-ű
+    return bool(re.match('^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]+$', word))
+def remove_non_hungarian(word_list):
+    hungarian_words_only = [word for word in hungarian_words if contains_hungarian_letters(word)]
+    return hungarian_words_only
+
+
+# Filter out non-Ukrainian
+def is_ukrainian_word(word):
+    ukrainian_alphabet_ranges = [
+    (0x0430, 0x044F),  # Lowercase Cyrillic letters а-я
+    (0x0451, 0x0451),  # Lowercase ё
+    (0x0454, 0x0454),  # Lowercase є
+    (0x0456, 0x0456),  # Lowercase і
+    (0x0457, 0x0457),  # Lowercase ї
+    (0x0491, 0x0491)]  # Lowercase ґ
+    for char in word:
+        char_code = ord(char)
+        if not any(start <= char_code <= end for start, end in ukrainian_alphabet_ranges):
+            return False
+    return True
+def remove_non_ukr(word_list):
+    ukrainian_words_only = [word for word in word_list if is_ukrainian_word(word)]
+    return ukrainian_words_only
+
+# Filter out non-Uyghur
+def remove_non_uig(words):
+    # Define Unicode character ranges for Uighur letters
+    uighur_alphabet_ranges = [
+        (0x0600, 0x06FF),  # Uighur Arabic script
+    ]
+
+    # Construct regex pattern
+    uighur_regex_pattern = '['
+    for start, end in uighur_alphabet_ranges:
+        uighur_regex_pattern += f'\\u{start:04X}-\\u{end:04X}'
+    uighur_regex_pattern += ']'
+
+    # Compile regex pattern
+    uighur_regex = re.compile(uighur_regex_pattern)
+
+    # Filter out non-Uighur words
+    uighur_words_only = [word for word in words if uighur_regex.match(word)]
+
+    return uighur_words_only
 
 
 
@@ -308,10 +358,10 @@ def remove_non_urdu(word_list):
 
 
 # Filter out unwanted words for Common Voice languages:
-def remove_unwanted_words(word_list, lang_code):
+def remove_unwanted_words(word_list, lang_code, if_cjk):
     # Filter out unwanted CJK words
     if if_cjk == 0:
-        filtered_words = vxcproc.remove_cjk(word_list)
+        filtered_words = remove_cjk(word_list)
     
     # Filter out other unwanted words on a by-language base
     if lang_code == 'de': # filter German
@@ -330,5 +380,13 @@ def remove_unwanted_words(word_list, lang_code):
         filtered_words = remove_non_hindi(filtered_words)
     elif lang_code == 'nl': # filter Dutch
         filtered_words = remove_non_dutch(filtered_words)
+    elif lang_code == 'uk': # filter Ukrainian
+        filtered_words = remove_non_ukr(filtered_words)
+    elif lang_code == 'ug': # filter Uighur
+        filtered_words = remove_non_uig(filtered_words)
+    elif lang_code == 'hu': # filter Hungarian
+        filtered_words = remove_non_hungarian(filtered_words)
+    elif lang_code == 'id': # filter Indonesian
+        filtered_words = remove_non_ind(filtered_words)
 
     return filtered_words
