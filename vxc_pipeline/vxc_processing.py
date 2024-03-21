@@ -202,6 +202,54 @@ def remove_non_dutch(word_list):
     dutch_word_list = [word for word in word_list if is_dutch_word(word)]
     return dutch_word_list
 
+# Filter Bashkir
+def is_bashkir_word(word):
+    bashkir_letters = set([
+    'А', 'а',  # A
+    'Ә', 'ә',  # Ä
+    'Б', 'б',  # B
+    'В', 'в',  # V
+    'Г', 'г',  # G
+    'Ғ', 'ғ',  # Ğ
+    'Д', 'д',  # D
+    'Е', 'е',  # E
+    'Ё', 'ё',  # Yo
+    'Ж', 'ж',  # J
+    'З', 'з',  # Z
+    'И', 'и',  # I
+    'Й', 'й',  # Y
+    'К', 'к',  # K
+    'Ҡ', 'ҡ',  # Q
+    'Л', 'л',  # L
+    'М', 'м',  # M
+    'Н', 'н',  # N
+    'Ң', 'ң',  # Ñ
+    'О', 'о',  # O
+    'Ө', 'ө',  # Ö
+    'П', 'п',  # P
+    'Р', 'р',  # R
+    'С', 'с',  # S
+    'Т', 'т',  # T
+    'У', 'у',  # U
+    'Ү', 'ү',  # Ü
+    'Ф', 'ф',  # F
+    'Х', 'х',  # H
+    'Һ', 'һ',  # H with a hook
+    'Ц', 'ц',  # Ts
+    'Ч', 'ч',  # Ch
+    'Ш', 'ш',  # Sh
+    'Щ', 'щ',  # Shch
+    'Ъ', 'ъ',  # Hard sign
+    'Ы', 'ы',  # Y
+    'Ь', 'ь',  # Soft sign
+    'Э', 'э',  # E
+    'Ю', 'ю',  # Yu
+    'Я', 'я',  # Ya
+])
+    return all(char in bashkir_letters for char in word)
+def remove_non_bashkir(word_list):
+    return [word for word in word_list if is_bashkir_word(word)]
+
 # Filter indonesian
 def contains_indonesian_letters(word):
     # Define Unicode character ranges for Indonesian letters
@@ -220,8 +268,6 @@ def contains_indonesian_letters(word):
 def remove_non_ind(word_list):
     ind_word_list = [word for word in word_list if contains_indonesian_letters(word)]
     return ind_word_list
-
-
 
 
 # Filter Hausa
@@ -304,19 +350,15 @@ def remove_non_uig(words):
     uighur_alphabet_ranges = [
         (0x0600, 0x06FF),  # Uighur Arabic script
     ]
-
     # Construct regex pattern
     uighur_regex_pattern = '['
     for start, end in uighur_alphabet_ranges:
         uighur_regex_pattern += f'\\u{start:04X}-\\u{end:04X}'
     uighur_regex_pattern += ']'
-
     # Compile regex pattern
     uighur_regex = re.compile(uighur_regex_pattern)
-
     # Filter out non-Uighur words
     uighur_words_only = [word for word in words if uighur_regex.match(word)]
-
     return uighur_words_only
 
 
@@ -355,6 +397,15 @@ def remove_non_urdu(word_list):
     filtered_words = list(filter(None, urdu_words))
     return filtered_words
 
+# Filter out non-Czech words
+def is_czech_word(word):
+    # Define a regular expression pattern for Czech letters
+    czech_pattern = re.compile(r'^[aábcčdďeéěfghchiíjklmnňoópqrřsštťuúůvwxyýzžAÁBCČDĎEÉĚFGHCHIÍJKLMNŇOÓPQRŘSŠTŤUÚŮVWXYÝZŽ]+$')
+    # Check if the word matches the Czech pattern
+    return bool(czech_pattern.match(word))
+def remove_non_czech(word_list):
+    return [word for word in word_list if is_czech_word(word)]
+
 
 
 # Filter out unwanted words for Common Voice languages:
@@ -388,5 +439,9 @@ def remove_unwanted_words(word_list, lang_code, if_cjk):
         filtered_words = remove_non_hungarian(filtered_words)
     elif lang_code == 'id': # filter Indonesian
         filtered_words = remove_non_ind(filtered_words)
+    elif lang_code == 'ba': # filter Bashkir
+        filtered_words = remove_non_bashkir(filtered_words)
+    elif lang_code == 'cs':
+        filtered_words = remove_non_czech(filtered_words)
 
     return filtered_words
