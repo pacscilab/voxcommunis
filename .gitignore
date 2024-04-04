@@ -2,3 +2,6 @@
 /vxc_pipeline/__pycache__
 .DS_Store
 .idea/
+.mp3
+.wav
+**/clips/
