@@ -8,7 +8,7 @@ from pathlib import Path
 ##########################################################################################################
 
 # Remap speakers and generate a speaker file
-def remap_spkr(lang_dir, path_sep, spkr_file_path):
+def remap_spkr(lang_dir, path_sep, spkr_file_path, lang_code):
     clip_dir = lang_dir + path_sep + 'clips' + path_sep # Where all the clips are
     invalid_log = lang_dir + path_sep + 'invalidated.tsv' # where the invalidated utterance log of common voice is
     valid_log = lang_dir + path_sep + 'validated.tsv' # where the validated utterance log of common voice is
@@ -81,6 +81,18 @@ def remap_spkr(lang_dir, path_sep, spkr_file_path):
     #speaker_lab = whole['speaker_id'].str.zfill(5)
     #whole['new_utt'] = speaker_lab + '_' + whole['path']
 
+    # Tokenize Japanese texts
+    if lang_code == 'ja':
+        # Import the Japanese tokenizer
+        from fugashi import Tagger
+        tagger = Tagger('-Owakati')
+        jpn_sentences = whole['sentence'].astype('str').tolist()
+        tokenized = pd.Series([tagger.parse(sentence) for sentence in jpn_sentences])
+        tokenized = tokenized.str.replace('([っ|ん]) ([て｜で｜た｜だ])', "\\1\\2", regex = True)
+        tokenized = tokenized.str.replace(' ん', 'ん')
+
+        whole['sentence'] = tokenized
+
     # save the speaker file
     if os.path.exists(spkr_file_path):
         os.remove(spkr_file_path)
@@ -97,8 +109,8 @@ def remap_spkr(lang_dir, path_sep, spkr_file_path):
     choice_snd_path = [lang_dir + path_sep + 'validated' + path_sep + whole['path'],  
                        lang_dir + path_sep + 'clips' + path_sep + whole['path'],
                        lang_dir + path_sep + 'other' + path_sep + whole['path'],]
-    whole["new_path"] = np.select(cond_snd_path, choice_snd_path)
-    whole = whole[['src_path', 'new_path', 'speaker_id', 'dur', 'sentence', 'validation']]
+    whole['new_path'] = np.select(cond_snd_path, choice_snd_path)
+    whole = whole[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence', 'validation']]
 
     return whole
 
@@ -140,14 +152,14 @@ def move_and_create_tg(df):
 
 
 # Get words from transcripts:
-def process_words(validated_log):
+def process_words(log, lang_code):
     # Read in the validated.tsv file and get the orthographical transcriptions of the utterances
-    words = pd.read_csv(validated_log, sep='\t', low_memory = False, usecols = ['sentence'], dtype = {'sentence':'str'}) # get the transcribed sentences
+    words = pd.read_csv(log, sep='\t', low_memory = False, usecols = ['sentence'], dtype = {'sentence':'str'}) # get the transcribed sentences
     # Filter out rows where the transcript is missing.
     words = words[words['sentence'].notnull()]['sentence']
 
     # Remove the punctuations
-    words = words.str.replace('[›|‹|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t| \' ]+', ' ', regex=True)
+    words = words.str.replace('[›|‹|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers
@@ -164,21 +176,46 @@ def process_words(validated_log):
     words = ' '.join(words)
     words = words.split(' ')
     words = sorted(set(words))
+    words = [word for word in words if word.strip()]
     words = list(filter(None, words))
+    
 
     # Filter out some text errors from Common Voice
     words = [re.sub('^mp3', '', word) for word in words]
     words = [word for word in words if 'common_voice' not in word]
 
     return words
-                
+
+##########################################################################################################
+##########################################################################################################
+
+# Move the recordings in and out of subfolders when the corpus is too large (more than 32000 recordings)
+def move_recs(src_file_list, dest_file_list):
+    for snd_src, snd_dest in zip(src_file_list, dest_file_list):
+        tg_extension = '.TextGrid'
+        snd_src_name = os.path.splitext(snd_src)[0]
+        snd_dest_name = os.path.splitext(snd_dest)[0]
+        tg_src = snd_src_name + tg_extension
+        tg_dest = snd_dest_name + tg_extension
+        if os.path.exists(snd_src):
+            shutil.move(snd_src, snd_dest)
+        if os.path.exists(tg_src):
+            shutil.move(tg_src, tg_dest)
+
 
 
 ############################################################
 ################### Text processing ########################
 ############################################################
 
-# Functions:
+# Filter Turkish
+def is_turkish_word(word):
+    # Match Turkish letters using regular expression
+    turkish_letters_pattern = re.compile(r'^[a-zA-ZğüşıöçĞÜŞİÖÇ]+$')
+    return bool(turkish_letters_pattern.match(word))
+def remove_non_turkish(word_list):
+    return [word for word in word_list if is_turkish_word(word)]
+
 # Filter Abkhaz
 def is_abkhaz_word(word):
     abkhaz_characters = {'а', 'аҧ', 'б', 'в', 'г', 'гь', 'д', 'е', 'еи', 'еӡ', 'ж', 'з', 'и', 'иҭ', 'иҵ', 'й', 
@@ -189,6 +226,15 @@ def is_abkhaz_word(word):
 def remove_non_abkhaz(word_list):
     abkhaz_word_list = [word for word in word_list if is_abkhaz_word(word)]
     return abkhaz_word_list
+
+# Filter Catalan
+def contains_non_catalan_letters(word):
+    # Catalan alphabet consists of characters from a-z, A-Z, à-ü, and special characters used in Catalan
+    catalan_letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàÀáÁèÈéÉíÍïÏòÒóÓúÚüÜçÇ"
+    return any(char not in catalan_letters for char in word)
+def remove_non_catalan(word_list):
+    catalan_word_list = [word for word in word_list if not contains_non_catalan_letters(word)]
+    return catalan_word_list
 
 
 # Filter Dutch
@@ -413,7 +459,7 @@ def remove_unwanted_words(word_list, lang_code, if_cjk):
     # Filter out unwanted CJK words
     if if_cjk == 0:
         filtered_words = remove_cjk(word_list)
-    
+        
     # Filter out other unwanted words on a by-language base
     if lang_code == 'de': # filter German
         filtered_words = remove_non_german(filtered_words)
@@ -441,7 +487,13 @@ def remove_unwanted_words(word_list, lang_code, if_cjk):
         filtered_words = remove_non_ind(filtered_words)
     elif lang_code == 'ba': # filter Bashkir
         filtered_words = remove_non_bashkir(filtered_words)
-    elif lang_code == 'cs':
+    elif lang_code == 'cs': # filter Czech
         filtered_words = remove_non_czech(filtered_words)
+    elif lang_code == 'ca': # filter Catalan
+        filtered_words = remove_non_catalan(filtered_words)
+    elif lang_code == 'tr': # filter Turkish
+        filtered_words = remove_non_turkish(filtered_words)
+    elif lang_code == 'ru': # filter Russian
+        filtered_words = [word for word in filtered_words if re.match(r'^[а-яА-ЯёЁ]+$', word)]
 
     return filtered_words

@@ -1,0 +1,110 @@
+index,Language,Code,Accent.Dialect,Dicts,Wikipron,espeak.ng,entries,available_data,data_license,citation
+1,Adyghe,ady,,y,y,,4895,https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/ady_dev.tsv,U/K,sigmorphon
+2,Afrikaans,afr,,,,y,48811,espeak_link,GPL version 3,espeak
+3,Albanian,sqi,,,,y,59662,espeak_link,GPL version 3,espeak
+4,Amharic,amh,,,,y,4085,espeak_link,GPL version 3,espeak
+5,Arabic,ara,,y,,,857159,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/ar.txt,MIT,ipa-dict
+6,Aragonese,arg,,,,y,4393,espeak_link,GPL version 3,espeak
+7,Armenian,arm-e,East Armenian,,y,,14177,wikipron_link,Apache 2.0,wikipron
+8,Armenian,arm-w,West Armenian,,y,,14040,wikipron_link,Apache 2.0,wikipron
+9,Azerbaijani,aze,,,,y,78714,espeak_link,GPL version 3,espeak
+10,Bashkir,bak,,,,y,24940,espeak_link,GPL version 3,espeak
+11,Basque,eus,,,,y,30816,espeak_link,GPL version 3,espeak
+12,Belarussian,bel,,,,y,84862,espeak_link,GPL version 3,espeak
+13,Bengali,ben,,,y,,NA,wikipron_link,Apache 2.0,wikipron
+14,Bosnian,bos,,,,y,39677,espeak_link,GPL version 3,espeak
+15,Bulgarian,bul,,y,y,,31782,https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/bul_dev.tsv,U/K,sigmorphon
+16,Burmese,bur,,,y,,4631,wikipron_link,Apache 2.0,wikipron
+17,Catalan,cat,,,y,,55829,wikipron_link,Apache 2.0,wikipron
+18,Chinese,yue,Cantonese,y,,,56189,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/yue.txt,MIT,ipa-dict
+19,Chinese,zho-t,Mandarin (traditional),y,,,48239,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/zh.txt,MIT,ipa-dict
+20,Chinese,zho-s,Mandarin (simplified),y,,,44779,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/zh_hans.txt,MIT,ipa-dict
+21,Chinese,min,Min Nan,,y,,NA,wikipron_link,Apache 2.0,wikipron
+22,Czech,cze,,,y,,26778,wikipron_link,Apache 2.0,wikipron
+23,Danish,dan,,,y,,7972,wikipron_link,Apache 2.0,wikipron
+24,Dutch,dut,,,y,,33570,wikipron_link,Apache 2.0,wikipron
+25,English,eng-uk,British,y,,,67327,"https://raw.githubusercontent.com/JoseLlarena/Britfone/master/britfone.main.3.0.1.csv,
+ 
+ https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/en_UK.txt","MIT, MIT","britfone, ipa-dict"
+26,English,eng-us,American,y,,,125924,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/en_US.txt,MIT,ipa-dict
+27,Esperanto,epo,,y,,,23304,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/eo.txt,MIT,ipa-dict
+28,Estonian,est,,,,y,87552,espeak_link,GPL version 3,espeak
+29,Finnish,fin,,y,,,92835,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/fi.txt,MIT,ipa-dict
+30,French,fra,France,y,,,245756,"https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/fre_dev.tsv,
+ 
+ https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/fr_FR.txt","U/K, MIT","sigmorphon, ipa-dict"
+31,French,fra-qu,Quebec,y,,,245955,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/fr_QC.txt,MIT,ipa-dict
+32,Gaelic,gla,Scottish,,y,,NA,wikipron_link,Apache 2.0,wikipron
+33,Georgian,geo,,,y,,15123,wikipron_link,Apache 2.0,wikipron
+34,German,ger,,,y,,278849,wikipron_link,Apache 2.0,wikipron
+35,Greek,gre,Modern,,y,,10547,wikipron_link,Apache 2.0,wikipron
+36,Greek,grc,Ancient,,y,,90222,wikipron_link,Apache 2.0,wikipron
+37,Guarani,grn,,,,y,NA,espeak_link,GPL version 3,espeak
+38,Gujarati,guj,,,,y,NA,espeak_link,GPL version 3,espeak
+39,Hindi,hin,,y,y,,9563,https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/hin_dev.tsv,U/K,sigmorphon
+40,Hungarian,hun,,y,y,,55533,https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/hun_dev.tsv,U/K,sigmorphon
+41,Ido,ido,,,y,,6382,wikipron_link,Apache 2.0,wikipron
+42,Indonesian,ind,,,,y,96808,espeak_link,GPL version 3,espeak
+43,Interlingua,ina,,,,y,5164,espeak_link,GPL version 3,espeak
+44,Italian,ita,,,y,,52920,wikipron_link,Apache 2.0,wikipron
+45,Jamaican Creole,jam,,y,,,NA,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/jam.txt,MIT,ipa-dict
+46,Japanese,jpn,,y,,,221788,"https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/jpn_dev.tsv,
+ 
+ https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/ja.txt","U/K, MIT","sigmorphon, ipa-dict"
+47,Kazakh,kaz,,,,y,62393,espeak_link,GPL version 3,espeak
+48,Khmer,khm,,y,,,3260,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/km.txt,MIT,ipa-dict
+49,Korean,kor,,y,,,NA,"https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/kor_dev.tsv,
+ 
+ https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/ko.txt","U/K, MIT","sigmorphon, ipa-dict"
+50,Kurdish,kur,,y,,,8592,"https://raw.githubusercontent.com/AsoSoft/Kurdish-G2P-dataset/master/AsoSoft-top5K,
+ https://raw.githubusercontent.com/AsoSoft/Kurdish-G2P-dataset/master/Wergor-words","U/K, MIT","veisi2020toward, ahmadi2019rule"
+51,Latin,lat-clas,classic,,y,,32715,wikipron_link,Apache 2.0,wikipron
+52,Latin,lat-eccl,Ecclesiastical,,y,,31750,wikipron_link,Apache 2.0,wikipron
+53,Lithuanian,lit,,y,y,,12676,https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/lit_dev.tsv,U/K,sigmorphon
+54,Luxembourgish,ltz,,,,y,49767,espeak_link,GPL version 3,espeak
+55,Macedonian,mac,,,y,,6878,wikipron_link,Apache 2.0,wikipron
+56,Maltese,mlt,,,,y,23337,espeak_link,GPL version 3,espeak
+57,Noethestern Thai,tts,,y,,,2182,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/tts.txt,MIT,ipa-dict
+58,Norwegian Bokm?l,nob,,y,,,10167,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/nb.txt,MIT,ipa-dict
+59,Oriya,ori,,,,y,6215,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/or.txt,MIT,ipa-dict
+60,Papiamento,pap,,,,y,8005,espeak_link,GPL version 3,espeak
+61,Persian,fas,,y,,,7699,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/fa.txt,MIT,ipa-dict
+62,Polish,pol,,,y,,71863,wikipron_link,Apache 2.0,wikipron
+63,Portuguese,por-po,Portugal,,y,,9800,wikipron_link,Apache 2.0,wikipron
+64,Portuguese,por-bz,Brazillian,,y,,11331,wikipron_link,Apache 2.0,wikipron
+65,Romanian,ron,,y,,,72680,"https://raw.githubusercontent.com/sigmorphon/2020/master/task1/data/dev/rum_dev.tsv,
+ 
+ https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/ro.txt","U/K, MIT","sigmorphon, ipa-dict"
+66,Russian,rus,,,y,,402586,wikipron_link,Apache 2.0,wikipron
+67,Sanskrit,san,,,y,,6839,wikipron_link,Apache 2.0,wikipron
+68,Serbian,srp,,,,y,88590,espeak_link,GPL version 3,espeak
+69,Serbo-Croatian,hbs-latn,Latin,,y,,23517,wikipron_link,Apache 2.0,wikipron
+70,Serbo-Croatian,hbs-cyrl,Cryrillc,,y,,22543,wikipron_link,Apache 2.0,wikipron
+71,Sindhi,snd,,,,y,10496,espeak_link,GPL version 3,espeak
+72,Slovak,slo,,,y,,3620,wikipron_link,Apache 2.0,wikipron
+73,Slovenian,slv,,,y,,4390,wikipron_link,Apache 2.0,wikipron
+74,Spanish,spa,Spain,y,,,595884,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/es_ES.txt,MIT,ipa-dict
+75,Spanish,spa-latin,Latin American,y,,,91118,https://www.openslr.org/34/,Apache 2.0,sandiago-spanish
+76,Spanish,spa-me,Mexico,y,,,595884,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/es_MX.txt,MIT,ipa-dict
+77,Swahili,swa,,y,,,48307,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/sw.txt,MIT,ipa-dict
+78,Swedish,swe,,y,,,822742,https://www.openslr.org/29/,CC0,Sprakbanken_Swe
+79,Tagalog,tgl,,,y,,7824,wikipron_link,Apache 2.0,wikipron
+80,Tamil,tam,,,y,,2386,wikipron_link,Apache 2.0,wikipron
+81,Tatar,tat,,,,y,63390,espeak_link,GPL version 3,espeak
+82,Thai,tha,,y,,,13608,https://raw.githubusercontent.com/wannaphong/thai-g2p/master/wiktionary-11-2-2020.tsv,Apache 2.0,thai-g2p
+83,Turkish,tur,,,,y,81928,espeak_link,GPL version 3,espeak
+84,Turkmen,tuk,,,,y,13843,espeak_link,GPL version 3,espeak
+85,Ukrainian,ukr,,,y,,10563,wikipron_link,Apache 2.0,wikipron
+86,Vietnamese,vie-n,Northern Vietnam,y,,,70901,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/vi_N.txt,MIT,ipa-dict
+87,Vietnamese,vie-c,Central Vietnam,y,,,70901,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/vi_C.txt,MIT,ipa-dict
+88,Vietnamese,vie-s,Southern Vietnam,y,,,70901,https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/vi_S.txt,MIT,ipa-dict
+89,Welsh,wel-nw,North Wales,,y,,8473,wikipron_link,Apache 2.0,wikipron
+90,Welsh,wel-sw,South Wales,,y,,9925,wikipron_link,Apache 2.0,wikipron
+91,Icelandic,ice,,,y,,9524,wikipron_link,Apache 2.0,wikipron
+92,Old English,ang,,,y,,8854,wikipron_link,Apache 2.0,wikipron
+93,Irish,gle,,,y,,7328,wikipron_link,Apache 2.0,wikipron
+94,Middle English,enm,,,y,,6855,wikipron_link,Apache 2.0,wikipron
+95,Classical Syriac,syc,,,y,,5947,wikipron_link,Apache 2.0,wikipron
+96,Galician,glg,,,y,,4887,wikipron_link,Apache 2.0,wikipron
+97,Northern Sami,sme,,,y,,3387,wikipron_link,Apache 2.0,wikipron
+98,Egyptian,egy,,,y,,3403,wikipron_link,Apache 2.0,wikipron
