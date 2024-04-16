@@ -1,18 +1,19 @@
-import re, csv, subprocess, unicodedata, os, shutil
+import re, csv, subprocess, unicodedata, os, shutil, zipfile, tarfile, multiprocessing
 import pandas as pd
 import numpy as np
 from praatio import textgrid
 from pathlib import Path
 
+
 ##########################################################################################################
 ##########################################################################################################
 
 # Remap speakers and generate a speaker file
-def remap_spkr(lang_dir, path_sep, spkr_file_path, lang_code):
-    clip_dir = lang_dir + path_sep + 'clips' + path_sep # Where all the clips are
-    invalid_log = lang_dir + path_sep + 'invalidated.tsv' # where the invalidated utterance log of common voice is
-    valid_log = lang_dir + path_sep + 'validated.tsv' # where the validated utterance log of common voice is
-    clip_dur_file = lang_dir + path_sep + 'clip_durations.tsv' # where the clip duration file is
+def remap_spkr(lang_dir, spkr_file_path, lang_code):
+    clip_dir = os.path.join(lang_dir, 'clips') # Where all the clips are
+    invalid_log = os.path.join(lang_dir, 'invalidated.tsv') # where the invalidated utterance log of common voice is
+    valid_log = os.path.join(lang_dir, 'validated.tsv') # where the validated utterance log of common voice is
+    clip_dur_file = os.path.join(lang_dir, 'clip_durations.tsv') # where the clip duration file is
 
     invalidated = pd.read_csv(invalid_log, sep = '\t', quoting=csv.QUOTE_NONE, low_memory = False,
                           dtype = {
@@ -78,41 +79,46 @@ def remap_spkr(lang_dir, path_sep, spkr_file_path, lang_code):
     # remap the speakers:
     whole['speaker_id'] = pd.factorize(whole['client_id'])[0] + 1
     whole['speaker_id'] = whole.speaker_id.astype('str')
-    #speaker_lab = whole['speaker_id'].str.zfill(5)
-    #whole['new_utt'] = speaker_lab + '_' + whole['path']
+
+    # subset the data to only validated recordings
+    valid = whole[whole['validation'] == 'validated']
+    del whole
 
     # Tokenize Japanese texts
     if lang_code == 'ja':
         # Import the Japanese tokenizer
         from fugashi import Tagger
         tagger = Tagger('-Owakati')
-        jpn_sentences = whole['sentence'].astype('str').tolist()
+        jpn_sentences = valid['sentence'].astype('str').tolist()
         tokenized = pd.Series([tagger.parse(sentence) for sentence in jpn_sentences])
         tokenized = tokenized.str.replace('([っ|ん]) ([て｜で｜た｜だ])', "\\1\\2", regex = True)
         tokenized = tokenized.str.replace(' ん', 'ん')
 
-        whole['sentence'] = tokenized
+        valid['sentence'] = tokenized
 
+    # The file paths
+    paths = valid['path'].tolist()
+    valid['src_path'] = [os.path.join(clip_dir, path) for path in paths]
+    valid['new_path'] = [os.path.join(lang_dir, 'validated', path) for path in paths]
+    
+    # If there are more than 32000 files, split them into groups and create paths in the subfolders
+    n_clips = len(valid)
+    if n_clips > 32000:
+        group_size = 32000
+        root = os.path.join(lang_dir, 'validated')
+        num_groups = (n_clips + group_size - 1) // group_size
+        valid['subfolder'] = ["subfolder_" + str(i+1).zfill(3) for i in range(num_groups) for _ in range(min(32000, n_clips - i*32000))]
+        valid['sub_path'] = [os.path.join(root, i, j) for i, j in zip(valid.subfolder, valid.path)]
+        valid = valid[['path', 'src_path', 'new_path', 'subfolder', 'sub_path', 'speaker_id', 'dur', 'sentence', 'validation']]
+    else:
+        valid = valid[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence', 'validation']]
+    
     # save the speaker file
     if os.path.exists(spkr_file_path):
         os.remove(spkr_file_path)
-    whole.to_csv(spkr_file_path, sep='\t', index=False)
-
-    # The file paths
-    whole['src_path'] = clip_dir + whole['path']
-
-    cond_snd_path = [
-        (whole['validation'] == 'validated'),
-        (whole['validation'] == 'invalidated'),
-        (whole['validation'] == 'other'),
-    ]
-    choice_snd_path = [lang_dir + path_sep + 'validated' + path_sep + whole['path'],  
-                       lang_dir + path_sep + 'clips' + path_sep + whole['path'],
-                       lang_dir + path_sep + 'other' + path_sep + whole['path'],]
-    whole['new_path'] = np.select(cond_snd_path, choice_snd_path)
-    whole = whole[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence', 'validation']]
-
-    return whole
+    valid.to_csv(spkr_file_path, sep='\t', index=False)
+    
+    return valid
 
 ##########################################################################################################
 ##########################################################################################################
@@ -138,7 +144,10 @@ def move_and_create_tg(df):
         new_path = Path(new_path)
         # Copy sound file and crate the textgrid file  
         if validation != 'invalidated' and src_mp3_path.exists():
-            shutil.move(src_mp3_path, new_path)
+            try:
+                shutil.move(src_mp3_path, new_path)
+            except Exception as e:
+                print(f"File moving error: {e}")
             tg_filename = new_path.with_suffix('.TextGrid')
             if validation == 'other' or isinstance(transcript, float):
                 os.remove(new_path)
@@ -159,7 +168,7 @@ def process_words(log, lang_code):
     words = words[words['sentence'].notnull()]['sentence']
 
     # Remove the punctuations
-    words = words.str.replace('[›|‹|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+    words = words.str.replace('[՜|։|՝|՛|›|‹|/|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers
@@ -190,23 +199,122 @@ def process_words(log, lang_code):
 ##########################################################################################################
 
 # Move the recordings in and out of subfolders when the corpus is too large (more than 32000 recordings)
-def move_recs(src_file_list, dest_file_list):
-    for snd_src, snd_dest in zip(src_file_list, dest_file_list):
-        tg_extension = '.TextGrid'
-        snd_src_name = os.path.splitext(snd_src)[0]
-        snd_dest_name = os.path.splitext(snd_dest)[0]
-        tg_src = snd_src_name + tg_extension
-        tg_dest = snd_dest_name + tg_extension
-        if os.path.exists(snd_src):
-            shutil.move(snd_src, snd_dest)
-        if os.path.exists(tg_src):
-            shutil.move(tg_src, tg_dest)
+def split_recs(df):
+    df = df
+    for src_snd, sub_snd in zip(df.new_path, df.sub_path):
+        src_tg = Path(src_snd).with_suffix('.TextGrid')
+        sub_tg = Path(sub_snd).with_suffix('.TextGrid')
+        try:
+            shutil.move(src_snd, sub_snd)
+            shutil.move(src_tg, sub_tg)
+        except Exception as e:
+            print(f"File moving error: {e}")
 
+# Merge the recordings back
+def merge_recs(df):
+    df = df
+    for src_snd, sub_snd in zip(df.sub_path, df.new_path):
+        src_tg = Path(src_snd).with_suffix('.TextGrid')
+        sub_tg = Path(sub_snd).with_suffix('.TextGrid')
+        try:
+            shutil.move(src_snd, sub_snd)
+            shutil.move(src_tg, sub_tg)
+        except Exception as e:
+            print(f"File moving error: {e}")
+
+# Check if there are file overlaps across subfolders
+def check_file_overlaps(root_dir):
+    # Dictionary to store file names and their paths
+    file_dict = {}
+
+    # Iterate over subfolders
+    for dirpath, _, filenames in os.walk(root_dir):
+        # Iterate over files in the subfolder
+        for filename in filenames:
+            # Get the full path of the file
+            file_path = os.path.join(dirpath, filename)
+            # Check if the file name already exists in the dictionary
+            if filename in file_dict:
+                # If it exists, append the current file path to the list of paths
+                file_dict[filename].append(file_path)
+            else:
+                # If it doesn't exist, create a new entry with the file name and its path
+                file_dict[filename] = [file_path]
+
+    # Dictionary to store overlapping file names and their paths
+    overlap_dict = {}
+
+    # Check for file name overlaps
+    for filename, file_paths in file_dict.items():
+        if len(file_paths) > 1:
+            overlap_dict[filename] = file_paths
+
+    return overlap_dict
+
+# Search a file
+def search_files(directory, search_string):
+    found_files = []
+    # Traverse the directory structure
+    for root, dirs, files in os.walk(directory):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            # Try different encodings to read the file
+            for encoding in ['utf-8', 'latin-1']:  # Add more encodings if needed
+                try:
+                    # Open each file with the specified encoding
+                    with open(file_path, 'r', encoding=encoding) as file:
+                        if search_string in file.read():
+                            found_files.append(file_path)
+                    # Break the loop if the file is successfully read
+                    break
+                except UnicodeDecodeError:
+                    # If decoding fails, try the next encoding
+                    continue
+    return found_files
+
+# Check if the input and output match
+def compare_inout(output, input):
+    all_outputs = set(os.path.splitext(item)[0] for item in os.listdir(output))
+    all_inputs = set(os.path.splitext(item)[0] for item in os.listdir(input) if item.endswith('.mp3'))
+
+    n_output = len(all_outputs)
+    n_input = len(all_inputs)
+    print(f"There are {n_input} mp3 files in the validated folder.")
+    print(f"There are {n_output} textgrid files in the output folder.")
+
+    if n_output != n_input:
+        return False, "Number of files in validated and output folders is different."
+
+    if all_outputs != all_inputs:
+        # Find mismatched files using set operations
+        mismatched_files = all_outputs.symmetric_difference(all_inputs)
+        return False, "File names in validated and the output folders do not match.", list(mismatched_files)
+
+    return True, "The recordings in the validated folder and the textgrids in the output folder match."
+
+# zip the output textgrids
+# load the file as a string then add it to the zip in a thread safe manner
+def add_file(lock, handle, filepath):
+    # load the data as a string
+    with open(filepath, 'r') as file_handle:
+        data = file_handle.read()
+    # add data to zip
+    with lock:
+        handle.writestr(filepath, data)
+    # report progress
+    #print(f'.added {filepath}')
+ 
 
 
 ############################################################
 ################### Text processing ########################
 ############################################################
+
+# Filter Bengali
+def is_bengali(word):
+    # Bengali Unicode range: U+0980 to U+09FF
+    bengali_range = re.compile(r'[\u0980-\u09FF]+')
+    return bool(bengali_range.match(word))
 
 # Filter Turkish
 def is_turkish_word(word):
@@ -495,5 +603,7 @@ def remove_unwanted_words(word_list, lang_code, if_cjk):
         filtered_words = remove_non_turkish(filtered_words)
     elif lang_code == 'ru': # filter Russian
         filtered_words = [word for word in filtered_words if re.match(r'^[а-яА-ЯёЁ]+$', word)]
+    elif lang_code == 'bn': # filter Bengali
+        filtered_words = [word for word in filtered_words if is_bengali(word)]
 
     return filtered_words
