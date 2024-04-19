@@ -3,3 +3,5 @@
 /vxc_pipeline/CharsiuG2P-merge_final.csv
 .DS_Store
 .idea/
+/vxc_pipeline/__pycache__
+vxc_pipeline/CharsiuG2P - merge_final.csv
