@@ -3,6 +3,10 @@ import epitran, jamo, csv, re, sys, g2pk
 # written by Emily P. Ahn for VoxCommunis
 # 2021
 
+# slightly modified by Miao Zhang
+# skip outputting the empty strings to the lexicon file
+# 2024/04/17
+
 # To run:
 #	python q_epi_wordlist.py {txt_infile} {lex_outfile} {epi_code}
 #	ex: py src/q_epi_wordlist.py data/comvoi/polish_oovs_found.txt data/comvoi/polish_oovs_epi.txt pol-Latn
@@ -31,7 +35,7 @@ with open(cv_txtfile, newline='') as f:
 		clean_phones = [phone for phone in phones if not bool(re.match('[^\w\s]', phone))]
 		lex_dict[word] = clean_phones
 		if phones != clean_phones:
-			print(phones, '\n', clean_phones)
+			print(phones, '\t', clean_phones, '\n')
 
 # write to outfile
 with open(lex_outfile, 'w') as w:
@@ -39,4 +43,5 @@ with open(lex_outfile, 'w') as w:
 		# separate phones with white space
 		# phone_seq = ' '.join(list(phones.strip()))
 		phone_seq = ' '.join(phones)
-		w.write('{}\t{}\n'.format(word, phone_seq))
+		if len(phone_seq.strip()) != 0: 
+			w.write('{}\t{}\n'.format(word, phone_seq))

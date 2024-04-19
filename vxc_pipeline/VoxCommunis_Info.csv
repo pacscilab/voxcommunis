@@ -1,17 +1,17 @@
 Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,clips,validClips,totalHrs,validHrs,lrec2022Hrs,diff,xpf,code_xpf,epitran,code_epi,code_chr,spkr_file,lexicon,acoustic_model,textgrids
-45,hi,yes,update mod,Hindi,Hindi,Hindi,Hindi,14751,10248,20.05,13.93,8.0,5.93,compromised,hi,yes,hin-Deva,hin,hi_epi_spkr16.tsv,hi_epi_lexicon16.txt,,
-93,pt,yes,update mod,Portuguese,Portuguese,,Portuguese,182665,150332,207.32,170.62,84.0,86.62,,,yes,por-Latn,por-po/por-bz,pt_epi_spkr17.tsv,pt_epi_lexicon17.txt,,
-98,ro,yes,update mod,Romanian,Romanian,Romanian,Romanian,41256,17390,45.91,19.35,11.0,8.35,yes,ro,yes,ron-Latn,ron,ro_epi_spkr16.tsv,ro_epi_lexicon16.txt,,
+45,hi,yes,updated,Hindi,Hindi,Hindi,Hindi,14751,10248,20.05,13.93,8.0,5.93,compromised,hi,yes,hin-Deva,hin,hi_epi_spkr17.tsv,hi_epi_lexicon17.txt,hi_epi_acoustic17.zip,hi_epi_textgrids17_acoustic17.zip
+93,pt,yes,updated,Portuguese,Portuguese,,Portuguese,182665,150332,207.32,170.62,84.0,86.62,,,yes,por-Latn,por-po/por-bz,pt_epi_spkr17.tsv,pt_epi_lexicon17.txt,,
+98,ro,yes,update mod,Romanian,Romanian,Romanian,Romanian,41256,17390,45.91,19.35,11.0,8.35,yes,ro,yes,ron-Latn,ron,ro_xpf_spkr17.tsv,ro_xpf_lexicon17.txt,ro_xpf_acoustic17.zip,ro_xpf_textgrids17_acoustic17.zip
 99,ru,yes,update mod,Russian,Russian,,Russian,184247,160747,264.05,230.37,148.0,82.37,,,yes,rus-Cyrl,rus,ru_epi_spkr17.tsv,ru_epi_lexicon17.txt,,
 0,ab,yes,update mod,Abkhaz,Abkhazian,Abkhaz,,60224,41982,84.4,58.83,2.0,56.83,yes,ab,,,,ab_xpf_spkr16.tsv,ab_xpf_lexicon16.txt,ab_xpf_acoustic16.zip,ab_xpf_textgrids16_acoustic16.zip
 48,hy-AM,yes,update mod,Armenian,Armenian,Armenian,,15647,8738,23.6,13.18,1.0,12.18,yes,hy,,,arm-e/arm-w,hy-AM_xpf_spkr17.tsv,hy-AM_xpf_lexicon17.txt,,
 33,eu,yes,update mod,Basque,Basque,Basque,,385795,138311,582.9,208.97,91.0,117.97,yes,eu,,,eus,eu_xpf_spkr17.tsv,eu_xpf_lexicon17.txt,,
 12,be,yes,update mod,Belarusian,Belarusian,Belarusan,,1286423,1245806,1693.55,1640.08,91.0,1549.08,yes,be,,,bel,be_xpf_spkr16.tsv,be_xpf_lexicon16.txt,,
-19,cv,yes,update mod,Chuvash,Chuvash,Chuvash,,19610,17318,27.5,24.29,5.0,19.29,yes,cv,,,,cv_xpf_spkr16.tsv,cv_xpf_lexicon16.txt,cv_xpf_acoustic16.zip,
+19,cv,yes,update mod,Chuvash,Chuvash,Chuvash,,19610,17318,27.5,24.29,5.0,19.29,yes,cv,,,,cv_xpf_spkr16.tsv,cv_xpf_lexicon16.txt,cv_xpf_acoustic16.zip,cv_xpf_textgrids16_acoustic16.zip
 56,ka,yes,update mod,Georgian,Georgian,Georgian,,115090,83970,161.45,117.79,6.0,111.79,yes,ka,,,geo,,,,
 42,gn,yes,update mod,Guarani,Guarani,Guarani,,21877,2907,27.56,3.66,0.53,3.13,yes,gn,,,grn,,,,
-43,ha,yes,update mod,Hausa,Hausa,,Hausa,10117,3280,12.17,3.94,1.0,2.94,,,yes,hau-Latn,,ha_epi_spkr16.tsv,ha_epi_lexicon16.txt,ha_epi_acoustic16.zip,ha_epi_textgrids16_acoustic16.zip
-47,hu,yes,update mod,Hungarian,Hungarian,Hungarian,Hungarian,112579,59654,170.13,90.15,16.0,74.15,yes,hu,yes,hun-Latn,hun,hu_epi_spkr16.tsv,hu_epi_lexicon16.txt,hu_epi_acoustic16.zip,
+43,ha,yes,updated,Hausa,Hausa,,Hausa,10117,3280,12.17,3.94,1.0,2.94,,,yes,hau-Latn,,ha_epi_spkr16.tsv,ha_epi_lexicon16.txt,ha_epi_acoustic16.zip,ha_epi_textgrids16_acoustic16.zip
+47,hu,yes,update mod,Hungarian,Hungarian,Hungarian,Hungarian,112579,59654,170.13,90.15,16.0,74.15,yes,hu,yes,hun-Latn,hun,hu_epi_spkr16.tsv,hu_epi_lexicon16.txt,,
 57,kk,yes,update mod,Kazakh,Kazakh,Kazakh,Kazakh,2456,1541,3.34,2.09,0.73,1.36,compromised,kk,yes,kaz-Cyrl,kaz,,,,
 58,kk,yes,update mod,Kazakh,Kazakh,Kazakh,Kazakh,2456,1541,3.34,2.09,0.73,1.36,compromised,kk,yes,kaz-Cyrl-bab,kaz,,,,
 59,kk,yes,update mod,Kazakh,Kazakh,Kazakh,Kazakh,2456,1541,3.34,2.09,0.73,1.36,compromised,kk,yes,kaz-Latn,kaz,,,,
@@ -26,8 +26,8 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 16,bg,yes,update mod,Bulgarian,Bulgarian,Bulgarian,,13471,9154,20.29,13.78,5.0,8.78,yes,bg,,,bul,bg_xpf_spkr16.tsv,bg_xpf_lexicon16.txt,bg_xpf_acoustic16.zip,bg_xpf_textgrids16_acoustic16.zip
 53,it,yes,update mod,Italian,Italian,,Italian,278747,235208,388.26,327.61,288.0,39.61,,,yes,ita-Latn,ita,,,,
 18,cs,yes,update mod,Czech,Czech,Czech,Czech,218001,60944,260.93,72.94,49.0,23.94,yes,cs,yes,ces-Latn,cze,cs_epi_spkr16.tsv,cs_epi_lexicon16.txt,,
-10,ba,yes,realign,Bashkir,Bashkir,Bashkir,,225215,209498,267.5,248.83,247.0,1.83,yes,ba,,,bak,ba_xpf_spkr16.tsv,ba_xpf_lexicon16.txt,,
-86,nl,yes,realign,Dutch,Dutch,,Dutch,98121,90004,118.36,108.57,93.0,15.57,,,yes,nld-Latn,dut,nl_epi_spkr16.tsv,nl_epi_lexicon16.txt,nl_epi_acoustic16.zip,
+10,ba,yes,realign,Bashkir,Bashkir,Bashkir,,225215,209498,267.5,248.83,247.0,1.83,yes,ba,,,bak,ba_xpf_spkr16.tsv,ba_xpf_lexicon16.txt,ba_xpf_acoustic16.zip,ba_xpf_textgrids16_acoustic16.zip
+86,nl,yes,realign,Dutch,Dutch,,Dutch,98121,90004,118.36,108.57,93.0,15.57,,,yes,nld-Latn,dut,nl_epi_spkr17.tsv,nl_epi_lexicon17.txt,nl_epi_acoustic16.zip,nl_epi_textgrids17_acoustic16.zip
 29,el,yes,update mod,Greek,Modern Greek (1453-),Greek,,28057,15938,31.19,17.71,13.0,4.71,yes,el,,,gre,el_xpf_spkr16.tsv,el_xpf_lexicon16.txt,el_xpf_acoustic16.zip,el_xpf_textgrids16_acoustic16.zip
 51,id,yes,realign,Indonesian,Indonesian,Indonesian,Indonesian,57774,25962,63.82,28.68,23.0,5.68,compromised,id,yes,ind-Latn,ind,id_epi_spkr16.tsv,id_epi_lexicon16.txt,,
 64,kmr,yes,realign,Kurmanji Kurdish,Northern Kurdish,,Kurmanji,87877,52928,98.27,59.19,45.0,14.19,,,yes,kmr-Latn,,,,,
@@ -73,7 +73,7 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 123,tk,,add,Turkmen,Turkmen,,Turkmen,3478,1717,5.2,2.56,,,,,yes,tuk-Cyrl,tuk,,,,
 124,tk,,add,Turkmen,Turkmen,,Turkmen,3478,1717,5.2,2.56,,,,,yes,tuk-Latn,tuk,,,,
 137,yo,,add,Yoruba,Yoruba,,Yoruba,4473,3075,7.28,5.0,,,,,yes,yor-Latn,,,,,
-107,sq,,add,Albanian,Albanian,Albanian,Albanian,1267,1252,1.59,1.57,,,yes,sq,yes,sqi-Latn,sqi,sq_epi_spkr16.tsv,sq_epi_lexicon16.txt,sq_epi_acoustic16.zip,
+107,sq,,add,Albanian,Albanian,Albanian,Albanian,1267,1252,1.59,1.57,,,yes,sq,yes,sqi-Latn,sqi,sq_epi_spkr17.tsv,sq_epi_lexicon17.txt,sq_epi_acoustic16.zip,sq_epi_textgrids17_acoustic16.zip
 2,am,,add,Amharic,Amharic,,Amharic,1223,753,2.04,1.25,,,,,yes,amh-Ethi,amh,,,,
 3,am,,add,Amharic,Amharic,,Amharic,1223,753,2.04,1.25,,,,,yes,amh-Ethi-pp,amh,,,,
 4,am,,add,Amharic,Amharic,,Amharic,1223,753,2.04,1.25,,,,,yes,amh-Ethi-red,amh,,,,
@@ -81,10 +81,10 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 23,da,,add,Danish,Danish,,,10954,10137,12.51,11.57,,,,,,,dan,,,,
 32,et,,add,Estonian,Estonian,,,32043,24358,59.94,45.56,,,,,,,est,,,,
 35,fi,,add,Finnish,Finnish,,,15374,9283,19.7,11.89,,,,,,,fin,,,,
-70,lt,,add,Lithuanian,Lithuanian,,,17749,16420,25.17,23.28,,,,,,,lit,,,,
-109,sr,,add,Serbian,Serbian,,,9163,5712,6.42,4.0,,,,,,,srp,,,,
-103,sk,,add,Slovak,Slovak,Slovak,,26581,19316,26.34,19.14,,,compromised,sk,,,slo,,,,
-104,sl,,add,Slovenian,Slovenian,,,14221,10715,14.75,11.11,,,,,,,slv,,,,
+70,lt,,chr not working,Lithuanian,Lithuanian,,,17749,16420,25.17,23.28,,,,,,,lit,,,,
+109,sr,,chr not working,Serbian,Serbian,,,9163,5712,6.42,4.0,,,,,,,srp,,,,
+103,sk,,chr not working,Slovak,Slovak,Slovak,,26581,19316,26.34,19.14,,,compromised,sk,,,slo,,,,
+104,sl,,chr not working,Slovenian,Slovenian,,,14221,10715,14.75,11.11,,,,,,,slv,,,,
 1,af,,,Afrikaans,Afrikaans,,,274,86,0.34,0.1,,,,,,,afr,,,,
 5,ar,,,Arabic,Arabic,Arabic,Literary Arabic,134562,77938,155.3,89.95,,,compromised,ar,yes,ara-Arab,ara,,,,
 6,as,,,Assamese,Assamese,,,2071,1717,3.27,2.71,,,,,,,,,,,

@@ -9,7 +9,7 @@ from pathlib import Path
 ##########################################################################################################
 
 # Remap speakers and generate a speaker file
-def remap_spkr(lang_dir, spkr_file_path, lang_code):
+def remap_spkr(lang_dir, spkr_file_path, lang_code, output=True):
     clip_dir = os.path.join(lang_dir, 'clips') # Where all the clips are
     invalid_log = os.path.join(lang_dir, 'invalidated.tsv') # where the invalidated utterance log of common voice is
     valid_log = os.path.join(lang_dir, 'validated.tsv') # where the validated utterance log of common voice is
@@ -48,6 +48,11 @@ def remap_spkr(lang_dir, spkr_file_path, lang_code):
     whole = pd.concat([validated, invalidated], axis=0)
     del invalidated, validated
 
+    # Skip the clients whose data are deleted on Common Voice
+    with open('speaker_skiplist.txt', 'r') as skip:
+        speaker_skiplist = [line.strip() for line in skip.readlines()] # get the client ids that need to be skipped
+    whole = whole[~whole['client_id'].isin(speaker_skiplist)]
+
     # Get the clip durations
     clip_dur = pd.read_csv(clip_dur_file, sep = '\t',
                         dtype = {'clip': 'str', 'duration[ms]': 'float64'})
@@ -81,42 +86,43 @@ def remap_spkr(lang_dir, spkr_file_path, lang_code):
     whole['speaker_id'] = whole.speaker_id.astype('str')
 
     # subset the data to only validated recordings
-    valid = whole[whole['validation'] == 'validated']
-    del whole
+    whole = whole[whole['validation'] == 'validated']
+    whole.drop('validation', axis = 1, inplace = True)
 
     # Tokenize Japanese texts
     if lang_code == 'ja':
         # Import the Japanese tokenizer
         from fugashi import Tagger
         tagger = Tagger('-Owakati')
-        jpn_sentences = valid['sentence'].astype('str').tolist()
+        jpn_sentences = whole['sentence'].astype('str').tolist()
         tokenized = pd.Series([tagger.parse(sentence) for sentence in jpn_sentences])
         tokenized = tokenized.str.replace('([っ|ん]) ([て｜で｜た｜だ])', "\\1\\2", regex = True)
         tokenized = tokenized.str.replace(' ん', 'ん')
 
-        valid['sentence'] = tokenized
+        whole['sentence'] = tokenized
+
+    # save the speaker file
+    if output:
+        if os.path.exists(spkr_file_path):
+            os.remove(spkr_file_path)
+        whole.to_csv(spkr_file_path, sep='\t', index=False)
 
     # The file paths
-    paths = valid['path'].tolist()
-    valid['src_path'] = [os.path.join(clip_dir, path) for path in paths]
-    valid['new_path'] = [os.path.join(lang_dir, 'validated', path) for path in paths]
+    paths = whole['path'].tolist()
+    whole['src_path'] = [os.path.join(clip_dir, path) for path in paths]
+    whole['new_path'] = [os.path.join(lang_dir, 'validated', path) for path in paths]
     
     # If there are more than 32000 files, split them into groups and create paths in the subfolders
-    n_clips = len(valid)
+    n_clips = len(whole)
     if n_clips > 32000:
         group_size = 32000
         root = os.path.join(lang_dir, 'validated')
         num_groups = (n_clips + group_size - 1) // group_size
-        valid['subfolder'] = ["subfolder_" + str(i+1).zfill(3) for i in range(num_groups) for _ in range(min(32000, n_clips - i*32000))]
-        valid['sub_path'] = [os.path.join(root, i, j) for i, j in zip(valid.subfolder, valid.path)]
-        valid = valid[['path', 'src_path', 'new_path', 'subfolder', 'sub_path', 'speaker_id', 'dur', 'sentence', 'validation']]
+        whole['subfolder'] = ["subfolder_" + str(i+1).zfill(3) for i in range(num_groups) for _ in range(min(32000, n_clips - i*32000))]
+        whole['sub_path'] = [os.path.join(root, i, j) for i, j in zip(whole.subfolder, whole.path)]
+        valid = whole[['path', 'src_path', 'new_path', 'subfolder', 'sub_path', 'speaker_id', 'dur', 'sentence']]
     else:
-        valid = valid[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence', 'validation']]
-    
-    # save the speaker file
-    if os.path.exists(spkr_file_path):
-        os.remove(spkr_file_path)
-    valid.to_csv(spkr_file_path, sep='\t', index=False)
+        valid = whole[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence']]
     
     return valid
 
@@ -139,21 +145,19 @@ def create_textgrid(snd_file, dur, speaker_id, transcript):
     tg.save(tg_filename, format='short_textgrid', includeBlankSpaces=True)
 
 def move_and_create_tg(df):
-    for src_mp3_path, new_path, speaker, dur, transcript, validation in zip(df.src_path, df.new_path, df.speaker_id, df.dur, df.sentence, df.validation):
+    for src_mp3_path, new_path, speaker, dur, transcript in zip(df.src_path, df.new_path, df.speaker_id, df.dur, df.sentence):
         src_mp3_path = Path(src_mp3_path)
         new_path = Path(new_path)
         # Copy sound file and crate the textgrid file  
-        if validation != 'invalidated' and src_mp3_path.exists():
+        if src_mp3_path.exists():
             try:
                 shutil.move(src_mp3_path, new_path)
             except Exception as e:
                 print(f"File moving error: {e}")
+            # Get the textgrid file name
             tg_filename = new_path.with_suffix('.TextGrid')
-            if validation == 'other' or isinstance(transcript, float):
-                os.remove(new_path)
-            elif not os.path.exists(tg_filename):
+            if not (isinstance(transcript, float) or os.path.exists(tg_filename)):
                 create_textgrid(new_path, dur, speaker, transcript)
-
 
 
 ##########################################################################################################
@@ -168,7 +172,7 @@ def process_words(log, lang_code):
     words = words[words['sentence'].notnull()]['sentence']
 
     # Remove the punctuations
-    words = words.str.replace('[՜|։|՝|՛|›|‹|/|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+    words = words.str.replace('[՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers
@@ -194,6 +198,18 @@ def process_words(log, lang_code):
     words = [word for word in words if 'common_voice' not in word]
 
     return words
+
+# Keep only the first unique strings
+def keep_first_unique_strings(strings):
+    seen = set()
+    result = []
+    for string in strings:
+        words = string.split()  # Split the string into words
+        unique_string = " ".join(words)  # Reconstruct the string
+        if unique_string not in seen:
+            result.append(unique_string)
+            seen.add(unique_string)
+    return result
 
 ##########################################################################################################
 ##########################################################################################################
@@ -221,6 +237,34 @@ def merge_recs(df):
             shutil.move(src_tg, sub_tg)
         except Exception as e:
             print(f"File moving error: {e}")
+
+# Move the files failed to be put back to the root directory
+def move_files_to_root(rootdir, subdir):
+    # List all files in the subdirectory
+    subdir = os.path.join(rootdir, subdir)
+    files_to_move = os.listdir(subdir)
+
+    moved_files = []
+    failed_files = []
+    # Move each file to the root folder
+    for file_name in files_to_move:
+        # Get the full path of the file in the subdirectory
+        src = os.path.join(subdir, file_name)
+        tgt = os.path.join(rootdir, file_name)
+        # Move the file to the root folder
+        try:
+            shutil.move(src, tgt)
+            moved_files.append(file_name)
+        except Exception as e:
+            # Handle any errors
+            failed_files.append((file_name, str(e)))
+
+    report = {}
+    report['moved_files'] = moved_files
+    report['failed_files'] = failed_files
+    report['files_left_in_subfolder'] = os.listdir(subdir)
+
+    return report
 
 # Check if there are file overlaps across subfolders
 def check_file_overlaps(root_dir):
@@ -294,21 +338,48 @@ def compare_inout(output, input):
 
 # zip the output textgrids
 # load the file as a string then add it to the zip in a thread safe manner
-def add_file(lock, handle, filepath):
+def add_file(lock, handle, filepath, base_folder):
     # load the data as a string
     with open(filepath, 'r') as file_handle:
         data = file_handle.read()
+    # get the relative path
+    rel_path = os.path.relpath(filepath, base_folder)
     # add data to zip
     with lock:
-        handle.writestr(filepath, data)
+        handle.writestr(rel_path, data)
     # report progress
     #print(f'.added {filepath}')
+
+# Check if the folder contains not just subdirectories but also files
+def contains_files(folder_path):
+    # Get a list of all items (files and folders) in the specified folder
+    all_items = os.listdir(folder_path)
+
+    # Check if there are any files in the folder
+    for item in all_items:
+        item_path = os.path.join(folder_path, item)
+        if os.path.isfile(item_path):
+            # If we find at least one file, return True
+            return True
+
+    # If no files were found, return False
+    return False
  
 
 
 ############################################################
 ################### Text processing ########################
 ############################################################
+
+# Filter Serbian
+def is_serbian_word(word):
+    # Regular expression to match Serbian letters (Cyrillic and Latin alphabets)
+    serbian_pattern = re.compile(r'^[а-яА-ЯјЈљЉњЊђЂчЧћЋшШжЖгГѕЅцЦџЏ]+$', re.IGNORECASE)
+
+    # Check if the word contains only Serbian letters
+    return bool(serbian_pattern.match(word))
+def remove_non_serbian(words):
+    return [word for word in words if is_serbian_word(word)]
 
 # Filter Bengali
 def is_bengali(word):
@@ -476,7 +547,7 @@ def contains_hungarian_letters(word):
     # Hungarian alphabet consists of characters from a-z, A-Z, and á-ű
     return bool(re.match('^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]+$', word))
 def remove_non_hungarian(word_list):
-    hungarian_words_only = [word for word in hungarian_words if contains_hungarian_letters(word)]
+    hungarian_words_only = [word for word in word_list if contains_hungarian_letters(word)]
     return hungarian_words_only
 
 
@@ -605,5 +676,7 @@ def remove_unwanted_words(word_list, lang_code, if_cjk):
         filtered_words = [word for word in filtered_words if re.match(r'^[а-яА-ЯёЁ]+$', word)]
     elif lang_code == 'bn': # filter Bengali
         filtered_words = [word for word in filtered_words if is_bengali(word)]
+    elif lang_code == 'sr':
+        filtered_words = remove_non_serbian(filtered_words)
 
     return filtered_words
