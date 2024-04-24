@@ -156,7 +156,7 @@ def move_and_create_tg(df):
                 print(f"File moving error: {e}")
             # Get the textgrid file name
             tg_filename = new_path.with_suffix('.TextGrid')
-            if not (isinstance(transcript, float) or os.path.exists(tg_filename)):
+            if not os.path.exists(tg_filename):
                 create_textgrid(new_path, dur, speaker, transcript)
 
 
@@ -172,7 +172,7 @@ def process_words(log, lang_code):
     words = words[words['sentence'].notnull()]['sentence']
 
     # Remove the punctuations
-    words = words.str.replace('[՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+    words = words.str.replace('[՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers

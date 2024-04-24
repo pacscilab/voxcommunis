@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Created by Miao Zhang, 04/19/2024
+
 # Check if arguments are provided
 if [ $# -lt 4 ]; then
     echo "Usage: $0 <validated_recs_path> <dict_file_path> <acs_mod_path> <output_path>"
