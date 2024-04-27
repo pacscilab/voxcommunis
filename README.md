@@ -12,11 +12,13 @@ The `vxc_lang_code_processing` folder contains the script `vxc_process_lang_code
 - `iso-639-3.tab`: contains the ISO639-1 and ISO639-3 codes for languages.
 - `xpf_langs-list.tsv`: contains the languages and their codes in XPF corpus.
 
-The `vxc_pipeline` contains the script to run the data processing pipeline `vxc_processing_pipeline.ipynb`. This script also requires *three* other scripts to run properly:
+The `vxc_pipeline` contains the script to run the data processing pipeline `vxc_processing_pipeline.ipynb`. This script also requires *five* other scripts to run properly:
 
 - `vxc_processing.py`: contains all the functions the pipeline is using.
 - `vxc_naming_schema.csv`: to set up the file names of the pipeline output.
 - `epi_run.py` or `xpf_translator04.py`: to create a pronunciation lexicon for VoxCommunis based on the Common Voice transcripts. The former runs `Epitran` while the latter runs `XPF` translator.
+- `speaker_skiplist.txt`: contains client ids for speakers whose data have been deleted from Common Voice.
+- `mfa_align.sh`: the bash script to loop through the subfolders to align data when the corpus is too large.
 
 If you want to use the G2P models from Epitran, you will need to download and install the package first (`pip install epitran`). If you want to use XPF, you will need to download the [XPF data](https://github.com/CohenPr-XPF/XPF/tree/master/Data) and save it on your computer. If you want to use Charsiu G2P, please follow the instruction on its [GitHub repo](https://github.com/lingjzhu/CharsiuG2P). [MFA](https://mfa-models.readthedocs.io/en/latest/index.html) also provides G2P models and lexicons.
  
