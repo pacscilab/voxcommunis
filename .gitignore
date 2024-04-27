@@ -5,3 +5,4 @@
 .idea/
 /vxc_pipeline/__pycache__
 vxc_pipeline/CharsiuG2P - merge_final.csv
+vxc_pipeline/test_ground.ipynb
