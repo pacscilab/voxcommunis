@@ -8,14 +8,38 @@ from pathlib import Path
 ##########################################################################################################
 ##########################################################################################################
 
-# Remap speakers and generate a speaker file
-def remap_spkr(lang_dir, spkr_file_path, lang_code, output=True):
-    clip_dir = os.path.join(lang_dir, 'clips') # Where all the clips are
-    invalid_log = os.path.join(lang_dir, 'invalidated.tsv') # where the invalidated utterance log of common voice is
-    valid_log = os.path.join(lang_dir, 'validated.tsv') # where the validated utterance log of common voice is
-    clip_dur_file = os.path.join(lang_dir, 'clip_durations.tsv') # where the clip duration file is
+# The function to tokenize CJK languages:
+def tok_cjk(df, lang_code):
+    sentences = df['sentence'].astype('str').tolist()
 
-    invalidated = pd.read_csv(invalid_log, sep = '\t', quoting=csv.QUOTE_NONE, low_memory = False,
+    if lang_code == 'ja':
+        # Import the Japanese tokenizer
+        from fugashi import Tagger
+        tagger = Tagger('-Owakati')
+        # Tokenize Japanese
+        tokenized = pd.Series([tagger.parse(sentence) for sentence in sentences])
+        tokenized = tokenized.str.replace('([っ|ん]) ([て｜で｜た｜だ])', "\\1\\2", regex = True)
+        tokenized = tokenized.str.replace(' ん', 'ん')
+    
+    if lang_code == 'ko':
+        # Import the Korean NLP tool
+        from konlpy.tag import Okt
+        # Create an instance of the Okt class
+        okt = Okt()
+        tokenized = pd.Series([' '.join(okt.morphs(sentence)) for sentence in sentences])
+    
+    if lang_code in ['yue', 'zh-HK']:
+        # Import the Cantonese NLP tool
+        import pycantonese
+        tokenized = pd.Series([' '.join(pycantonese.segment(sentence)) for sentence in sentences])
+
+    # Replace the original transcript with the tokenized sentences
+    df['sentence'] = tokenized
+
+    return df
+
+def read_in_log(path):
+    df = pd.read_csv(path, sep = '\t', quoting=csv.QUOTE_NONE, low_memory = False,
                           dtype = {
                               'client_id': 'str',
                               'path': 'str',
@@ -29,20 +53,18 @@ def remap_spkr(lang_dir, spkr_file_path, lang_code, output=True):
                               'locale': 'str',
                               'segment': 'str'
                           })
-    validated = pd.read_csv(valid_log, sep = '\t', quoting=csv.QUOTE_NONE, low_memory = False,
-                            dtype = {
-                                'client_id': 'str',
-                                'path': 'str',
-                                'sentence': 'str',
-                                'up_votes': 'int16',
-                                'down_votes': 'int16',
-                                'age': 'str',
-                                'gender': 'str',
-                                'accentes': 'str',
-                                'variant': 'str',
-                                'locale': 'str',
-                                'segment': 'str'
-                            })
+    return df
+
+# Remap speakers and generate a speaker file
+def remap_spkr(lang_dir, spkr_file_path, lang_code, if_cjk, output=True):
+    clip_dir = os.path.join(lang_dir, 'clips') # Where all the clips are
+    invalid_log = os.path.join(lang_dir, 'invalidated.tsv') # where the invalidated utterance log of common voice is
+    valid_log = os.path.join(lang_dir, 'validated.tsv') # where the validated utterance log of common voice is
+    clip_dur_file = os.path.join(lang_dir, 'clip_durations.tsv') # where the clip duration file is
+
+    invalidated = read_in_log(invalid_log)
+    validated = read_in_log(valid_log)
+
     invalidated['validation'] = 'invalidated'
     validated['validation'] = 'validated'
     whole = pd.concat([validated, invalidated], axis=0)
@@ -52,6 +74,7 @@ def remap_spkr(lang_dir, spkr_file_path, lang_code, output=True):
     with open('speaker_skiplist.txt', 'r') as skip:
         speaker_skiplist = [line.strip() for line in skip.readlines()] # get the client ids that need to be skipped
     whole = whole[~whole['client_id'].isin(speaker_skiplist)]
+    del speaker_skiplist
 
     # Get the clip durations
     clip_dur = pd.read_csv(clip_dur_file, sep = '\t',
@@ -89,17 +112,9 @@ def remap_spkr(lang_dir, spkr_file_path, lang_code, output=True):
     whole = whole[whole['validation'] == 'validated']
     whole.drop('validation', axis = 1, inplace = True)
 
-    # Tokenize Japanese texts
-    if lang_code == 'ja':
-        # Import the Japanese tokenizer
-        from fugashi import Tagger
-        tagger = Tagger('-Owakati')
-        jpn_sentences = whole['sentence'].astype('str').tolist()
-        tokenized = pd.Series([tagger.parse(sentence) for sentence in jpn_sentences])
-        tokenized = tokenized.str.replace('([っ|ん]) ([て｜で｜た｜だ])', "\\1\\2", regex = True)
-        tokenized = tokenized.str.replace(' ん', 'ん')
-
-        whole['sentence'] = tokenized
+    # Tokenize CJK texts
+    if if_cjk:
+        whole = tok_cjk(whole, lang_code)
 
     # save the speaker file
     if output:
@@ -124,6 +139,7 @@ def remap_spkr(lang_dir, spkr_file_path, lang_code, output=True):
     else:
         valid = whole[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence']]
     
+    del whole
     return valid
 
 ##########################################################################################################
@@ -165,18 +181,20 @@ def move_and_create_tg(df):
 
 
 # Get words from transcripts:
-def process_words(log, lang_code):
+def process_words(df, lang_code):
     # Read in the validated.tsv file and get the orthographical transcriptions of the utterances
-    words = pd.read_csv(log, sep='\t', low_memory = False, usecols = ['sentence'], dtype = {'sentence':'str'}) # get the transcribed sentences
-    # Filter out rows where the transcript is missing.
-    words = words[words['sentence'].notnull()]['sentence']
+    words = df['sentence'] # get the transcribed sentences
+    words = words[words.notnull()]
+    #print(words)
 
     # Remove the punctuations
-    words = words.str.replace('[՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+    words = words.str.replace('[~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+    #print(words)
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers
     words = words.str.replace('[0-9]+', ' ', regex=True)
+    #print(words)
     # Remove all remaining punctuations
     words = words.str.replace('[[:punct:]]+', ' ', regex=True)
     # Merge multiple continueing white spaces
@@ -185,13 +203,12 @@ def process_words(log, lang_code):
     words = words.str.lower()
 
     # Make it a list of the word types
-    words.tolist()
+    words = words.tolist()
     words = ' '.join(words)
     words = words.split(' ')
     words = sorted(set(words))
     words = [word for word in words if word.strip()]
     words = list(filter(None, words))
-    
 
     # Filter out some text errors from Common Voice
     words = [re.sub('^mp3', '', word) for word in words]
@@ -210,6 +227,69 @@ def keep_first_unique_strings(strings):
             result.append(unique_string)
             seen.add(unique_string)
     return result
+
+##########################################################################################################
+##########################################################################################################
+# G2P
+def xpf_g2p(xpf_translater_path, rule_file_path, verify_file_path, word_file_path):
+    g2p_cmd = ["python", xpf_translater_path, "-l", rule_file_path, "-c", verify_file_path, "-r", word_file_path] # XPF translating command that will be sent to subprocess.run() to execute.
+
+    with open(dict_file_path,'w') as dict_file:
+        subprocess.run(g2p_cmd, stdout = dict_file) # stdout = ... means to send the output to the file (so you have to open this file first as above)
+
+    # This is to get rid of all the '@' in the lexicon (if there is any). @ means that XPF G2P failure
+    with open(dict_file_path, "r") as dict_file:
+        dict = dict_file.read().split("\n")
+
+    with open(dict_file_path, 'w') as dict_file:
+        for i in dict:
+            i = re.sub(" ː", "ː", i)
+            # Get rid of words that contain sounds XPF can't figure out
+            if '@' not in i:
+                dict_file.write(i + "\n")
+                
+def charsiu_g2p(words, code_chr):
+    from transformers import T5ForConditionalGeneration, AutoTokenizer
+
+    model = T5ForConditionalGeneration.from_pretrained('charsiu/g2p_multilingual_byT5_tiny_16_layers_100')
+    tokenizer = AutoTokenizer.from_pretrained('google/byt5-small')
+
+    chr_words = [f'<{code_chr}>: '+i for i in words]
+    out = tokenizer(chr_words, padding = True, add_special_tokens = False, return_tensors = 'pt')
+
+    preds = model.generate(**out, num_beams = 1, max_length = 50) # We do not find beam search helpful. Greedy decoding is enough. 
+    phones = tokenizer.batch_decode(preds.tolist(), skip_special_tokens = True)
+
+    return phones
+
+def process_phone(words, phones, lang_code, dict_file_path):
+    from lingpy import ipa2tokens
+    phones = [ipa2tokens(phone) for phone in phones]
+    phones = [' '.join(phone) for phone in phones]
+    phones = [re.sub(':', 'ː', phone) for phone in phones]
+
+    if lang_code in ['yue', 'zh-HK']:
+        # Change homosyllabic 't s' to 't͡s'
+        pattern_ts = re.compile(r'(^|[˥˦˧˨˩]\s)t s')
+        phones = [re.sub(pattern_ts, r'\1t͡s', phone) for phone in phones]
+
+        # Change syllabic 'ŋ' to 'ŋ̩'
+        pattern_ng_syll = re.compile(r'(^|[˥˦˧˨˩]+\s)ŋ(\s[˥˦˧˨˩]+)')
+        phones = [re.sub(pattern_ng_syll, r'\1ŋ̩\2', phone) for phone in phones]
+
+        # Put the tone markers to directly following the main vowel
+        #pattern_tone_pos = re.compile(r'\s([mnŋptk])\s([˥˦˧˨˩]+)')
+        #phones_with_tone = [re.sub(pattern_tone_pos, r' \2 \1', phone) for phone in phones]
+        #phones_with_tone = [re.sub(r'(.)\s([˥˦˧˨˩]+)', r'\1\2', phone) for phone in phones_with_tone]
+
+        # Strip away the tone markers
+        phones = [re.sub(r'[˥˦˧˨˩]+', '', phone) for phone in phones]
+        phones = [re.sub(r'\s+', ' ', phone) for phone in phones]
+
+    # Save the output 
+    with open(dict_file_path, 'w') as dict_file:
+        for word, w in zip(words, phones):
+            dict_file.write(word + '\t' + w + "\n")
 
 ##########################################################################################################
 ##########################################################################################################
@@ -371,6 +451,14 @@ def contains_files(folder_path):
 ################### Text processing ########################
 ############################################################
 
+# Filter Mongolian
+def remove_non_mongolian(words):
+    cyrillic_words = []
+    for word in words:
+        if re.match(r'^[а-яёүөӨҮА-ЯЁ\s]+$', word):  # Check if word contains only Cyrillic characters
+            cyrillic_words.append(word)
+    return cyrillic_words
+
 # Filter Serbian
 def is_serbian_word(word):
     # Regular expression to match Serbian letters (Cyrillic and Latin alphabets)
@@ -521,12 +609,16 @@ def remove_non_hindi(word_list):
 
     
 # Filter out unwanted CJK characters in non-CJK texts
-def is_cjk(char):
-    # Check if the character is a CJK character
-    return bool(re.search(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af]', char))
+# Regular expression for matching CJK characters
+
+
+# Filter function to check if CJK characters are in a word
+def contains_cjk(word):
+    cjk_pattern = re.compile('[\u4e00-\u9fff\u3400-\u4dff\uac00-\ud7af\u3040-\u309f\u30a0-\u30ff]')
+    return cjk_pattern.search(word) is not None
 def remove_cjk(words):
     # Use list comprehension to filter out words containing CJK or non-Latin letters
-    filtered_words = [word for word in words if all(not is_cjk(char) for char in word)]
+    filtered_words = [word for word in words if not contains_cjk(word)]
     filtered_words = list(filter(None, filtered_words))
     return filtered_words
 
@@ -631,13 +723,32 @@ def is_czech_word(word):
 def remove_non_czech(word_list):
     return [word for word in word_list if is_czech_word(word)]
 
+# Filter out non-Cyrillic texts
+def remove_non_cyrillic(words):
+    cyrillic_words = []
+    for word in words:
+        if re.match(r'^[а-яёүөӨҮА-ЯЁ\s]+$', word):  # Check if the word contains only Cyrillic characters
+            cyrillic_words.append(word)
+    return cyrillic_words
+
+# Remove latin letters
+def remove_latin(word):
+    remove_pattern = re.compile('[a-zA-Z]')
+    return remove_pattern.sub('', word)
 
 
 # Filter out unwanted words for Common Voice languages:
-def remove_unwanted_words(word_list, lang_code, if_cjk):
-    # Filter out unwanted CJK words
-    if if_cjk == 0:
+def remove_unwanted_words(word_list, lang_code, if_cjk, if_cyrl):
+    if not if_cjk:
+        # Filter out unwanted CJK words
         filtered_words = remove_cjk(word_list)
+    else:
+        # Otherwise remove the Latin letters
+        filtered_words = [remove_latin(word) for word in word_list if remove_latin(word)]
+
+
+    if if_cyrl == 1:
+        filtered_words = remove_non_cyrillic(word_list)
         
     # Filter out other unwanted words on a by-language base
     if lang_code == 'de': # filter German
@@ -676,7 +787,9 @@ def remove_unwanted_words(word_list, lang_code, if_cjk):
         filtered_words = [word for word in filtered_words if re.match(r'^[а-яА-ЯёЁ]+$', word)]
     elif lang_code == 'bn': # filter Bengali
         filtered_words = [word for word in filtered_words if is_bengali(word)]
-    elif lang_code == 'sr':
+    elif lang_code == 'sr': # filter Serbian
         filtered_words = remove_non_serbian(filtered_words)
+    elif lang_code == 'mn': # filter Mongolian
+        filtered_words = remove_non_mongolian(filtered_words)
 
     return filtered_words
