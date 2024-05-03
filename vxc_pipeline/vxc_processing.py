@@ -3,39 +3,73 @@ import pandas as pd
 import numpy as np
 from praatio import textgrid
 from pathlib import Path
+# Multithread pool
+from concurrent.futures import ThreadPoolExecutor
 
+
+# Japanese tokenizer
+from fugashi import Tagger
+# Korean tokenizer
+from konlpy.tag import Okt
+# Cantonese tokenizer
+import pycantonese
+# Traditional Chinese tokenizer
+from ckiptagger import WS
+# Simplified Chinese tokenizer and processing
+import pkuseg
+import chinese_converter
+# For Chinese G2P
+from pypinyin import pinyin, Style
+from pinyin_to_ipa import pinyin_to_ipa
+
+# Tokenize IPA
+from lingpy import ipa2tokens
 
 ##########################################################################################################
 ##########################################################################################################
 
 # The function to tokenize CJK languages:
 def tok_cjk(df, lang_code):
-    sentences = df['sentence'].astype('str').tolist()
-
     if lang_code == 'ja':
-        # Import the Japanese tokenizer
-        from fugashi import Tagger
         tagger = Tagger('-Owakati')
-        # Tokenize Japanese
-        tokenized = pd.Series([tagger.parse(sentence) for sentence in sentences])
-        tokenized = tokenized.str.replace('([っ|ん]) ([て｜で｜た｜だ])', "\\1\\2", regex = True)
-        tokenized = tokenized.str.replace(' ん', 'ん')
+        tokenized = [tagger.parse(sentence) for sentence in df['sentence'].astype('str').tolist()]
+        tokenized = [re.sub(r'([っ|ん]) ([て｜で｜た｜だ])', r"\1\2", sentence) for sentence in sentences]
+        tokenized = [re.sub(r' (ん)', r'\1', sentence) for sentence in sentences]
     
-    if lang_code == 'ko':
-        # Import the Korean NLP tool
-        from konlpy.tag import Okt
-        # Create an instance of the Okt class
+    # Korean
+    elif lang_code == 'ko':
         okt = Okt()
-        tokenized = pd.Series([' '.join(okt.morphs(sentence)) for sentence in sentences])
+        tokenized = [' '.join(okt.morphs(sentence)) for sentence in df['sentence'].astype('str').tolist()]
     
-    if lang_code in ['yue', 'zh-HK']:
-        # Import the Cantonese NLP tool
-        import pycantonese
-        tokenized = pd.Series([' '.join(pycantonese.segment(sentence)) for sentence in sentences])
+    # Cantonese
+    elif lang_code in ['yue', 'zh-HK']:
+        tokenized = [' '.join(pycantonese.segment(sentence)) for sentence in df['sentence'].astype('str').tolist()]
+    
+    # Simplified Chinese
+    elif lang_code == 'zh-CN':
+        seg = pkuseg.pkuseg()
+        tokenized = [' '.join(seg.cut(sentence)) for sentence in df['sentence'].astype('str').tolist()]
+        tokenized = [re.sub('[·•]', ' ', sentence) for sentence in tokenized]
+    
+    # Traditional Chinese
+    elif lang_code == 'zh-TW':
+        ws = WS("./ckiptagger_data")
+        tokenized = [' '.ws(sentence) for sentence in df['sentence'].astype('str').tolist()]
 
-    # Replace the original transcript with the tokenized sentences
-    df['sentence'] = tokenized
+    # append to the dataframe
+    df['sentence_tok'] = tokenized
+    df.drop(columns = 'sentence', axis = 1, inplace = True)
 
+    return df
+
+# Convert between simplified Chinese and traditional Chinese
+def convert_chn(df, lang_code):
+    if lang_code == 'zh-CN':
+        converted = [chinese_converter.to_simplified(text) for text in df['sentence'].astype('str').tolist()]
+        df['sentence'] = converted
+    elif lang_code in ['yue', 'zh-HK', 'zh-TW', 'nan-TW']:
+        converted = [chinese_converter.to_traditional(text) for text in df['sentence'].astype('str').tolist()]
+        df['sentence'] = converted
     return df
 
 def read_in_log(path):
@@ -56,91 +90,94 @@ def read_in_log(path):
     return df
 
 # Remap speakers and generate a speaker file
-def remap_spkr(lang_dir, spkr_file_path, lang_code, if_cjk, output=True):
+def remap_spkr(lang_dir, spkr_file_path, lang_code, is_cjk, output=True):
     clip_dir = os.path.join(lang_dir, 'clips') # Where all the clips are
-    invalid_log = os.path.join(lang_dir, 'invalidated.tsv') # where the invalidated utterance log of common voice is
     valid_log = os.path.join(lang_dir, 'validated.tsv') # where the validated utterance log of common voice is
     clip_dur_file = os.path.join(lang_dir, 'clip_durations.tsv') # where the clip duration file is
 
-    invalidated = read_in_log(invalid_log)
     validated = read_in_log(valid_log)
-
-    invalidated['validation'] = 'invalidated'
     validated['validation'] = 'validated'
-    whole = pd.concat([validated, invalidated], axis=0)
-    del invalidated, validated
 
     # Skip the clients whose data are deleted on Common Voice
     with open('speaker_skiplist.txt', 'r') as skip:
         speaker_skiplist = [line.strip() for line in skip.readlines()] # get the client ids that need to be skipped
-    whole = whole[~whole['client_id'].isin(speaker_skiplist)]
+    validated = validated[~validated['client_id'].isin(speaker_skiplist)]
     del speaker_skiplist
 
     # Get the clip durations
-    clip_dur = pd.read_csv(clip_dur_file, sep = '\t',
-                        dtype = {'clip': 'str', 'duration[ms]': 'float64'})
+    clip_dur = pd.read_csv(clip_dur_file, sep = '\t', dtype = {'clip': 'str', 'duration[ms]': 'float64'})
     clip_dur.rename(columns = {'clip':'path', 'duration[ms]':'dur'}, inplace=True)
     clip_dur.set_index('path', inplace = True)
 
     # Append duration info to validated speaker file
-    whole.set_index('path', inplace = True)
-    whole = pd.concat([whole, clip_dur], axis = 1, join = 'inner')
-    whole['dur'] = whole['dur']/1000
-    whole.reset_index(inplace=True)
+    validated.set_index('path', inplace = True)
+    validated = pd.concat([validated, clip_dur], axis = 1, join = 'inner')
+    validated['dur'] = validated['dur']/1000
+    validated.reset_index(inplace=True)
     del clip_dur
 
     # Create a column that shows if the clip is validated or not based on the votes
     conditions = [
-        ((whole['validation'] == 'validated') & (whole['dur'] > 1)),
-        (whole['validation'] == 'invalidated'),
-        (
-            ((whole['validation'] == 'validated') & (whole['dur'] <= 1)) |
-            (whole['sentence'] == '') |
-            (whole['sentence'].isna()) |
-            (whole['sentence'].str.contains('common_voice', regex=True))
-            ),
+        ((validated['validation'] == 'validated') & (validated['dur'] > 1)),
+        (((validated['validation'] == 'validated') & (validated['dur'] <= 1)) |
+         (len(str(validated['sentence'].str.strip())) == 0) |
+         (validated['sentence'].isna()) |
+         (validated['sentence'].str.contains('common_voice', regex = True)))
     ]
-    choices = ["validated", "invalidated", "other"]
-    whole["validation"] = np.select(conditions, choices)
+    choices = ["validated", "other"]
+    validated["validation"] = np.select(conditions, choices)
     del conditions, choices
 
     # remap the speakers:
-    whole['speaker_id'] = pd.factorize(whole['client_id'])[0] + 1
-    whole['speaker_id'] = whole.speaker_id.astype('str')
+    validated['speaker_id'] = pd.factorize(validated['client_id'])[0] + 1
+    validated['speaker_id'] = validated.speaker_id.astype('str')
 
     # subset the data to only validated recordings
-    whole = whole[whole['validation'] == 'validated']
-    whole.drop('validation', axis = 1, inplace = True)
+    validated = validated[validated['validation'] == 'validated']
+    validated.drop('validation', axis = 1, inplace = True)
 
     # Tokenize CJK texts
-    if if_cjk:
-        whole = tok_cjk(whole, lang_code)
-
+    if is_cjk:
+        sentences = validated[['sentence_id', 'sentence']]
+        unique_sentences = sentences.drop_duplicates()
+        converted_sentence = convert_chn(unique_sentences, lang_code)
+        tokenized_sentences = tok_cjk(converted_sentence, lang_code)
+        validated = pd.merge(validated, tokenized_sentences, on= 'sentence_id', how = 'left')
+        # Rarrange the columns so that the tokenized sentence is next to the original ones.
+        cols = list(validated.columns)
+        cols.remove('sentence_tok')
+        target_index = cols.index('sentence_domain')
+        cols.insert(target_index, 'sentence_tok')
+        validated = validated[cols]
+    
+    # Normalize the apostrophe in Uzbek
+    if lang_code == 'uz':
+        # Replace the apostrophes after o and g with a simple '
+        transcript = validated['sentence'].tolist()
+        transcript = [re.sub(r"([oOgG])([ʼ‘’ʻ`'´])", r"\1ʻ", sentence) for sentence in transcript]
+        transcript = [re.sub(r"([^\W\d_ogOG])([ʼ‘’ʻ`'´])", r"\1ʼ", sentence) for sentence in transcript]
+        transcript = [re.sub(r"(-|•)", " ", sentence) for sentence in transcript]
+        validated['sentence'] = transcript
+        
     # save the speaker file
     if output:
         if os.path.exists(spkr_file_path):
             os.remove(spkr_file_path)
-        whole.to_csv(spkr_file_path, sep='\t', index=False)
+        validated.to_csv(spkr_file_path, sep='\t', index=False)
 
     # The file paths
-    paths = whole['path'].tolist()
-    whole['src_path'] = [os.path.join(clip_dir, path) for path in paths]
-    whole['new_path'] = [os.path.join(lang_dir, 'validated', path) for path in paths]
+    paths = validated['path'].tolist()
+    validated['src_path'] = [os.path.join(clip_dir, path) for path in paths]
+    validated['new_path'] = [os.path.join(lang_dir, 'validated', path) for path in paths]
     
     # If there are more than 32000 files, split them into groups and create paths in the subfolders
-    n_clips = len(whole)
-    if n_clips > 32000:
-        group_size = 32000
+    if len(validated) > 32000:
         root = os.path.join(lang_dir, 'validated')
-        num_groups = (n_clips + group_size - 1) // group_size
-        whole['subfolder'] = ["subfolder_" + str(i+1).zfill(3) for i in range(num_groups) for _ in range(min(32000, n_clips - i*32000))]
-        whole['sub_path'] = [os.path.join(root, i, j) for i, j in zip(whole.subfolder, whole.path)]
-        valid = whole[['path', 'src_path', 'new_path', 'subfolder', 'sub_path', 'speaker_id', 'dur', 'sentence']]
-    else:
-        valid = whole[['path', 'src_path', 'new_path', 'speaker_id', 'dur', 'sentence']]
-    
-    del whole
-    return valid
+        num_groups = (len(validated) + 32000 - 1) // 32000
+        validated['subfolder'] = ["subfolder_" + str(i+1).zfill(3) for i in range(num_groups) for _ in range(min(32000, len(validated) - i*32000))]
+        validated['sub_path'] = [os.path.join(root, i, j) for i, j in zip(validated.subfolder, validated.path)]
+
+    return validated
 
 ##########################################################################################################
 ##########################################################################################################
@@ -160,36 +197,70 @@ def create_textgrid(snd_file, dur, speaker_id, transcript):
     tg_filename = snd_path.with_suffix('.TextGrid')
     tg.save(tg_filename, format='short_textgrid', includeBlankSpaces=True)
 
-def move_and_create_tg(df):
-    for src_mp3_path, new_path, speaker, dur, transcript in zip(df.src_path, df.new_path, df.speaker_id, df.dur, df.sentence):
-        src_mp3_path = Path(src_mp3_path)
-        new_path = Path(new_path)
-        # Copy sound file and crate the textgrid file  
-        if src_mp3_path.exists():
-            try:
-                shutil.move(src_mp3_path, new_path)
-            except Exception as e:
-                print(f"File moving error: {e}")
-            # Get the textgrid file name
-            tg_filename = new_path.with_suffix('.TextGrid')
-            if not os.path.exists(tg_filename):
-                create_textgrid(new_path, dur, speaker, transcript)
+def move_and_create_tg(df, is_cjk):
+    if is_cjk:
+        for src_mp3_path, new_path, speaker, dur, transcript in zip(df.src_path, df.new_path, df.speaker_id, df.dur, df.sentence_tok):
+            src_mp3_path = Path(src_mp3_path)
+            new_path = Path(new_path)
+            # Copy sound file and crate the textgrid file  
+            if src_mp3_path.exists():
+                try:
+                    shutil.move(src_mp3_path, new_path)
+                except Exception as e:
+                    print(f"File moving error: {e}")
+                # Get the textgrid file name
+                tg_filename = new_path.with_suffix('.TextGrid')
+                if not os.path.exists(tg_filename):
+                    create_textgrid(new_path, dur, speaker, transcript)
+    else:
+        for src_mp3_path, new_path, speaker, dur, transcript in zip(df.src_path, df.new_path, df.speaker_id, df.dur, df.sentence):
+            src_mp3_path = Path(src_mp3_path)
+            new_path = Path(new_path)
+            # Copy sound file and crate the textgrid file  
+            if src_mp3_path.exists():
+                try:
+                    shutil.move(src_mp3_path, new_path)
+                except Exception as e:
+                    print(f"File moving error: {e}")
+                # Get the textgrid file name
+                tg_filename = new_path.with_suffix('.TextGrid')
+                if not os.path.exists(tg_filename):
+                    create_textgrid(new_path, dur, speaker, transcript)
+    
 
 
 ##########################################################################################################
 ##########################################################################################################
 
+# Define the function that removes Uzbek punctuations
+def remove_uz_punct(text):
+    # Step 1: Temporarily replace the specific cases with placeholders
+    temp_replacement1 = re.sub(r"(oʻ|gʻ)", lambda m: m.group(0).replace("ʻ", "<T1>"), text)
+    temp_replacement2 = re.sub(r"(\w)ʼ", lambda m: m.group(0).replace("ʼ", "<T2>"), temp_replacement1)
+    
+    # Step 2: Remove all remaining punctuation
+    no_punctuation = re.sub(r"[^\w\s<>\d]", "", temp_replacement2)
+    
+    # Step 3: Reinsert the specific cases back with correct characters
+    final_text = no_punctuation.replace("<T1>", "ʻ").replace("<T2>", "ʼ")
+    return final_text
 
 # Get words from transcripts:
-def process_words(df, lang_code):
+def process_words(df, lang_code, is_cjk):
     # Read in the validated.tsv file and get the orthographical transcriptions of the utterances
-    words = df['sentence'] # get the transcribed sentences
+    if is_cjk:
+        words = df['sentence_tok'] # get the transcribed sentences
+    else:
+        words = df['sentence']
     words = words[words.notnull()]
     #print(words)
 
     # Remove the punctuations
-    words = words.str.replace('[~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
-    #print(words)
+    if lang_code == 'uz':
+        words = pd.Series([remove_uz_punct(word) for word in words.tolist()])
+    else:
+        words = words.str.replace('[~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
     # Remove all numbers
@@ -216,22 +287,80 @@ def process_words(df, lang_code):
 
     return words
 
-# Keep only the first unique strings
-def keep_first_unique_strings(strings):
-    seen = set()
-    result = []
-    for string in strings:
-        words = string.split()  # Split the string into words
-        unique_string = " ".join(words)  # Reconstruct the string
-        if unique_string not in seen:
-            result.append(unique_string)
-            seen.add(unique_string)
-    return result
+##########################################################################################################
+##########################################################################################################
 
-##########################################################################################################
-##########################################################################################################
 # G2P
-def xpf_g2p(xpf_translater_path, rule_file_path, verify_file_path, word_file_path):
+
+# Epitran
+def remove_non_ipa_(string_list, ipa_symbols):
+    result_list = []
+    for string in string_list:
+        # Find all IPA symbols and white spaces in the string using the regex pattern
+        ipa_symbols_spaces = re.findall(ipa_symbols, string)
+        
+        # Concatenate the IPA symbols and white spaces to form a cleaned string
+        cleaned_string = ''.join([group for group in ipa_symbols_spaces if group])
+        
+        # Append the cleaned string to the result list
+        result_list.append(cleaned_string)
+    
+    return result_list
+
+def epi_g2p(words, epi_code, dict_file_path):
+    import epitran
+    ipa_symbols = re.compile(r'([\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF\u1AB0-\u1AFF\u1DC0-\u1DFF\u2000-\u206F\u2070-\u209F\u2190-\u21FF\u2C60-\u2C7F\uA700-\uA71F]+)|\s')
+
+    if epi_code == 'cmn-Hans':
+        epi = epitran.Epitran(epi_code, cedict_file = '/Users/miaozhang/Research/CorpusPhon/Scripts/vxc_pipeline/cedict_1_0_ts_utf-8_mdbg.txt')
+    else:
+        epi = epitran.Epitran(epi_code)
+
+    lex_dict = {}
+    for word in words:
+        if epi_code == 'yue-Latn':
+            jyutping = pycantonese.characters_to_jyutping(word)[0][1]
+            if jyutping is None:
+                phone = ''
+            else:
+                phone = epi.transliterate(jyutping)
+                phone = re.sub(":", "ː", phone)
+                # Attach the unreleased symbol to the coda stops
+                phone = re.sub(r'(p|pʰ|t|tʰ|k|kʰ)($|p|t|t͡s|s|f|k|m|n|ŋ|l|j|w|h|ʔ)', lambda m: f"{m.group(1).replace('ʰ', '')}̚{m.group(2)}", phone) 
+                #phone = re.sub(r'(t|tʰ)($|p|t|t͡s|s|f|k|m|n|ŋ|l|j|w|h|ʔ)', r't̚\2', phone)
+                #phone = re.sub(r'(k|kʰ)($|p|t|t͡s|s|f|k|m|n|ŋ|l|j|w|h|ʔ)', r'k̚\2', phone)
+                phone = ' '.join(ipa2tokens(phone))
+                phone = re.sub(r'j (i|y)', r'\1', phone) # get rid of j before i or y in 
+                phone = re.sub('w u', 'u', phone)  # get rid of w before u
+                phone = re.sub(r'(k|kʰ)ʷ ', r'\1 ʷ', phone) # move the w onglide to group it with the rime instead of the consonant
+        else:
+            phone = epi.transliterate(word)
+            phone = re.sub(":", "ː", phone)
+            phone = ' '.join(ipa2tokens(phone))
+
+        # Separate any identical ipa symbols repeated twice with a white space
+        phone = re.sub(r'([\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF])\1', r'\1 \1', phone)
+        phone = re.sub(r'ˈ|ˌ', '', phone) # strip the stress markers
+
+        if not re.sub(r'[^\w\s]', '', word): # if the word is an empty string, no phone output
+            clean_phone = ''
+        else:
+            # Get rid of the non-IPAs from the output
+            only_ipa = re.findall(ipa_symbols, phone)
+            clean_phone = ' '.join(only_ipa)
+
+        lex_dict[word] = clean_phone
+        if phone != clean_phone:
+            print(word + ': ' + phone + '\t' + clean_phone)
+
+    # write to outfile
+    with open(dict_file_path, 'w') as dict_file:
+        for word, phone in sorted(lex_dict.items()):
+            if phone.strip() != '': 
+                dict_file.write(word + '\t' + phone + "\n")
+    
+# XPF
+def xpf_g2p(xpf_translater_path, rule_file_path, verify_file_path, word_file_path, dict_file_path):
     g2p_cmd = ["python", xpf_translater_path, "-l", rule_file_path, "-c", verify_file_path, "-r", word_file_path] # XPF translating command that will be sent to subprocess.run() to execute.
 
     with open(dict_file_path,'w') as dict_file:
@@ -247,49 +376,115 @@ def xpf_g2p(xpf_translater_path, rule_file_path, verify_file_path, word_file_pat
             # Get rid of words that contain sounds XPF can't figure out
             if '@' not in i:
                 dict_file.write(i + "\n")
-                
-def charsiu_g2p(words, code_chr):
-    from transformers import T5ForConditionalGeneration, AutoTokenizer
 
+# Charsiu
+def chr_generate(words, code_chr):
+    from transformers import T5ForConditionalGeneration, AutoTokenizer
     model = T5ForConditionalGeneration.from_pretrained('charsiu/g2p_multilingual_byT5_tiny_16_layers_100')
     tokenizer = AutoTokenizer.from_pretrained('google/byt5-small')
 
-    chr_words = [f'<{code_chr}>: '+i for i in words]
-    out = tokenizer(chr_words, padding = True, add_special_tokens = False, return_tensors = 'pt')
+    def process_chunk(chunk):
+        chr_words = [f'<{code_chr}>: '+i for i in chunk]
+        out = tokenizer(chr_words, padding=True, add_special_tokens=False, return_tensors='pt')
+        preds = model.generate(**out, num_beams=1, max_length=50)
+        phones = tokenizer.batch_decode(preds.tolist(), skip_special_tokens=True)
+        
+        phones = [' '.join(ipa2tokens(phone)) for phone in phones]
+        phones = [re.sub(':', 'ː', phone) for phone in phones]
+        return phones
 
-    preds = model.generate(**out, num_beams = 1, max_length = 50) # We do not find beam search helpful. Greedy decoding is enough. 
-    phones = tokenizer.batch_decode(preds.tolist(), skip_special_tokens = True)
+    # Split the 'words' list into chunks for processing
+    chunk_size = 5000
+    chunks = [words[i:i + chunk_size] for i in range(0, len(words), chunk_size)]
+
+    # Process the chunks using ThreadPoolExecutor for parallel processing with threads
+    with ThreadPoolExecutor(5) as executor:
+        processed_phones = list(executor.map(process_chunk, chunks))
+
+    # Combine the results from each chunk processing
+    phones = [phone for chunk_result in processed_phones for phone in chunk_result]
 
     return phones
 
-def process_phone(words, phones, lang_code, dict_file_path):
-    from lingpy import ipa2tokens
-    phones = [ipa2tokens(phone) for phone in phones]
-    phones = [' '.join(phone) for phone in phones]
-    phones = [re.sub(':', 'ː', phone) for phone in phones]
-
-    if lang_code in ['yue', 'zh-HK']:
+def chr_postproc(phones, code_chr):
+    if code_chr == 'yue':
         # Change homosyllabic 't s' to 't͡s'
         pattern_ts = re.compile(r'(^|[˥˦˧˨˩]\s)t s')
         phones = [re.sub(pattern_ts, r'\1t͡s', phone) for phone in phones]
 
         # Change syllabic 'ŋ' to 'ŋ̩'
-        pattern_ng_syll = re.compile(r'(^|[˥˦˧˨˩]+\s)ŋ(\s[˥˦˧˨˩]+)')
+        pattern_ng_syll = re.compile(r'(^|[˥˦˧˨˩]\s)ŋ(\s[˥˦˧˨˩])')
         phones = [re.sub(pattern_ng_syll, r'\1ŋ̩\2', phone) for phone in phones]
 
-        # Put the tone markers to directly following the main vowel
-        #pattern_tone_pos = re.compile(r'\s([mnŋptk])\s([˥˦˧˨˩]+)')
-        #phones_with_tone = [re.sub(pattern_tone_pos, r' \2 \1', phone) for phone in phones]
-        #phones_with_tone = [re.sub(r'(.)\s([˥˦˧˨˩]+)', r'\1\2', phone) for phone in phones_with_tone]
+        # Change labialzed 'k w' to 'k'
+        pattern_kw = re.compile(r'(^|[˥˦˧˨˩]\s)(k|kʰ) w')
+        phones = [re.sub(pattern_kw, r'\1\2ʷ', phone) for phone in phones]
 
-        # Strip away the tone markers
-        phones = [re.sub(r'[˥˦˧˨˩]+', '', phone) for phone in phones]
-        phones = [re.sub(r'\s+', ' ', phone) for phone in phones]
+        # Remove the onset /j, w/ before /i/ and /u/
+        pattern_jiy = re.compile(r'(^|[˥˦˧˨˩]\s)j (i|y)')
+        pattern_wu = re.compile(r'(^|[˥˦˧˨˩]\s)w u')
+        phones = [re.sub(pattern_jiy, r'\1\2', phone) for phone in phones] 
+        phones = [re.sub(pattern_wu, r'\1u', phone) for phone in phones]
 
+        # Mark the syllabic final unreleased ptk
+        pattern_ptk = r'[ptk]\s(?=˥|˦|˧|˨|˩)'
+        phones = [re.sub(pattern_ptk, lambda x: x.group()[0]+'̚ ', phone) for phone in phones]
+    
+    elif code_chr == 'est':
+        # Get rid of stress markers in Estonian
+        phones = [re.sub(r' \^|ˈ|ˌ', '', phone) for phone in phones]
+
+    # Put the tone markers to directly following the main vowel
+    #pattern_tone_pos = re.compile(r'\s([mnŋptk])\s([˥˦˧˨˩]+)')
+    #phones_with_tone = [re.sub(pattern_tone_pos, r' \2 \1', phone) for phone in phones]
+    #phones_with_tone = [re.sub(r'(.)\s([˥˦˧˨˩]+)', r'\1\2', phone) for phone in phones_with_tone]
+    # Strip away the tone markers
+    phones = [re.sub(r'[˥˦˧˨˩]+', '', phone) for phone in phones]
+    phones = [re.sub(r'\s+', ' ', phone) for phone in phones]
+
+    return phones
+ 
+def charsiu_g2p(words, code_chr, dict_file_path):
+    phones = chr_generate(words, code_chr)
+    phones = chr_postproc(phones, code_chr)
     # Save the output 
+    transcript = []
     with open(dict_file_path, 'w') as dict_file:
-        for word, w in zip(words, phones):
-            dict_file.write(word + '\t' + w + "\n")
+        for word, phone in zip(words, phones):
+            dict_file.write(word + '\t' + phone + "\n")
+            transcript.append(word + '\t' + phone)
+
+    return transcript
+
+# Chinese g2p
+def convert_cmn(chinese_text):
+    py = pinyin(chinese_text, style=Style.TONE3)
+    # Flatten the list and join words with spaces
+    py = [item[0] for item in py]
+    # Get each syllable
+    ipa = [pinyin_to_ipa(item)[0] for item in py]
+    ipa = [' '.join(sound) for sound in ipa]
+    ipa = [re.sub('[˥˦˧˨˩]', '', sound) for sound in ipa]
+    # Make onglides superscript and attach them to the following vowel
+    ipa = [re.sub(r'(p|m|f|t|n|l|k|x|s|ʂ|ɻ|ʰ) w ', r'\1 ʷ', syll) for syll in ipa]
+    ipa = [re.sub(r'(p|t|m|n|l|ɕ|ʰ) j ', r'\1 ʲ', syll) for syll in ipa]
+    ipa = [re.sub(r'(n|l|ɕ|ʰ) ɥ ', r'\1 ᶣ', syll) for syll in ipa]
+    ipa = [re.sub('a ŋ', 'ɑ ŋ', syll) for syll in ipa]
+    ipa = ' '.join(ipa)
+    
+    transcript = chinese_text + '\t' + ipa
+    
+    return transcript
+
+def cmn_g2p(words, dict_file_path):
+    g2p_res = []    
+    for word in words:
+        transcript = convert_cmn(word)
+        g2p_res.append(transcript)
+    
+    with open(dict_file_path, 'w') as dict:
+        for line in g2p_res:
+            dict.write(line + '\n')
 
 ##########################################################################################################
 ##########################################################################################################
@@ -450,6 +645,13 @@ def contains_files(folder_path):
 ############################################################
 ################### Text processing ########################
 ############################################################
+
+def remove_non_chinese(text):
+    # This pattern matches any character not in the specified Unicode blocks of Chinese characters
+    pattern = r'[^\u4e00-\u9fff\u3400-\u4dbf]'
+    # Remove non-Chinese characters
+    clean_text = re.sub(pattern, '', text)
+    return clean_text
 
 # Filter Mongolian
 def remove_non_mongolian(words):
@@ -738,14 +940,13 @@ def remove_latin(word):
 
 
 # Filter out unwanted words for Common Voice languages:
-def remove_unwanted_words(word_list, lang_code, if_cjk, if_cyrl):
-    if not if_cjk:
+def remove_unwanted_words(word_list, lang_code, is_cjk, if_cyrl):
+    if not is_cjk:
         # Filter out unwanted CJK words
         filtered_words = remove_cjk(word_list)
     else:
         # Otherwise remove the Latin letters
         filtered_words = [remove_latin(word) for word in word_list if remove_latin(word)]
-
 
     if if_cyrl == 1:
         filtered_words = remove_non_cyrillic(word_list)
@@ -791,5 +992,8 @@ def remove_unwanted_words(word_list, lang_code, if_cjk, if_cyrl):
         filtered_words = remove_non_serbian(filtered_words)
     elif lang_code == 'mn': # filter Mongolian
         filtered_words = remove_non_mongolian(filtered_words)
+    elif lang_code == 'zh-CN': # filter Chinese
+        filtered_words = [remove_non_chinese(word) for word in filtered_words]
 
+    filtered_words = [word for word in filtered_words if word.strip() != '']
     return filtered_words

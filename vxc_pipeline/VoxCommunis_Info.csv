@@ -20,16 +20,16 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 127,tr,yes,updated/uploaded,Turkish,Turkish,Turkish,Turkish,115926,111192,117.08,112.3,30.0,82.3,yes,tr,yes,tur-Latn-red,tur,tr_xpf_spkr17.tsv,tr_xpf_lexicon17.txt,tr_xpf_acoustic17.zip,tr_xpf_textgrids17_acoustic17.zip
 130,uk,yes,updated/uploaded,Ukrainian,Ukrainian,Ukrainian,Ukranian,82807,73689,107.27,95.45,56.0,39.45,yes,uk,yes,ukr-Cyrl,ukr,uk_xpf_spkr17.tsv,uk_xpf_lexicon17.txt,uk_xpf_acoustic17.zip,uk_xpf_textgrids17_acoustic17.zip
 129,ug,yes,update mod,Uyghur,Uighur,Uyghur,Uyghur,109620,86415,179.84,141.77,41.0,100.77,yes,ug,yes,uig-Arab,,ug_epi_spkr16.tsv,ug_epi_lexicon16.txt,ug_epi_acoustic16.zip,
-132,uz,yes,update mod,Uzbek,Uzbek,Uzbek,Uzbek,228312,86351,263.05,99.49,0.24,99.25,yes,uz,yes,uzb-Cyrl,,,,,
-133,uz,yes,update mod,Uzbek,Uzbek,Uzbek,Uzbek,228312,86351,263.05,99.49,0.24,99.25,yes,uz,yes,uzb-Latn,,,,,
-134,vi,yes,update mod,Vietnamese,Vietnamese,Vietnamese,Vietnamese,17341,4975,18.7,5.36,3.0,2.36,yes,vi,yes,vie-Latn,vie-n/vie-c/vie-s,vi_epi_spkr16.tsv,vi_epi_lexicon16.txt,vi_epi_acoustic16.zip,vi_epi_textgrids16_acoustic16.zip
+132,uz,yes,updated/uploaded,Uzbek,Uzbek,Uzbek,Uzbek,228312,86351,263.05,99.49,0.24,99.25,yes,uz,yes,uzb-Cyrl,,uz_epi_spkr17.tsv,uz_epi_lexicon17.txt,uz_epi_acoustic17.zip,uz_epi_textgrids17_acoustic17.zip
+133,uz,yes,updated/uploaded,Uzbek,Uzbek,Uzbek,Uzbek,228312,86351,263.05,99.49,0.24,99.25,yes,uz,yes,uzb-Latn,,uz_epi_spkr17.tsv,uz_epi_lexicon17.txt,uz_epi_acoustic17.zip,uz_epi_textgrids17_acoustic17.zip
+134,vi,yes,updated/uploaded,Vietnamese,Vietnamese,Vietnamese,Vietnamese,17341,4975,18.7,5.36,3.0,2.36,yes,vi,yes,vie-Latn,vie-n/vie-c/vie-s,vi_epi_spkr16.tsv,vi_epi_lexicon16.txt,vi_epi_acoustic16.zip,vi_epi_textgrids16_acoustic16.zip
 16,bg,yes,updated/uploaded,Bulgarian,Bulgarian,Bulgarian,,13471,9154,20.29,13.78,5.0,8.78,yes,bg,,,bul,bg_xpf_spkr16.tsv,bg_xpf_lexicon16.txt,bg_xpf_acoustic16.zip,bg_xpf_textgrids16_acoustic16.zip
 53,it,yes,update mod,Italian,Italian,,Italian,278747,235208,388.26,327.61,288.0,39.61,,,yes,ita-Latn,ita,,,,
 18,cs,yes,updated/uploaded,Czech,Czech,Czech,Czech,218001,60944,260.93,72.94,49.0,23.94,yes,cs,yes,ces-Latn,cze,cs_xpf_spkr17.tsv,cs_xpf_lexicon17.txt,cs_xpf_acoustic17.zip,cs_xpf_textgrids17_acoustic17.zip
 10,ba,yes,updated/uploaded,Bashkir,Bashkir,Bashkir,,225215,209498,267.5,248.83,247.0,1.83,yes,ba,,,bak,ba_xpf_spkr16.tsv,ba_xpf_lexicon16.txt,ba_xpf_acoustic16.zip,ba_xpf_textgrids16_acoustic16.zip
 86,nl,yes,updated/uploaded,Dutch,Dutch,,Dutch,98121,90004,118.36,108.57,93.0,15.57,,,yes,nld-Latn,dut,nl_epi_spkr17.tsv,nl_epi_lexicon17.txt,nl_epi_acoustic16.zip,nl_epi_textgrids17_acoustic16.zip
 29,el,yes,updated/uploaded,Greek,Modern Greek (1453-),Greek,,28057,15938,31.19,17.71,13.0,4.71,yes,el,,,gre,el_xpf_spkr16.tsv,el_xpf_lexicon16.txt,el_xpf_acoustic16.zip,el_xpf_textgrids16_acoustic16.zip
-51,id,yes,updataed/uploaded,Indonesian,Indonesian,Indonesian,Indonesian,57774,25962,63.82,28.68,23.0,5.68,compromised,id,yes,ind-Latn,ind,id_epi_spkr17.tsv,id_epi_lexicon17.txt,id_epi_acoustic17.zip,id_epi_textgrids17_acoustic17.zip
+51,id,yes,updated/uploaded,Indonesian,Indonesian,Indonesian,Indonesian,57774,25962,63.82,28.68,23.0,5.68,compromised,id,yes,ind-Latn,ind,id_epi_spkr17.tsv,id_epi_lexicon17.txt,id_epi_acoustic17.zip,id_epi_textgrids17_acoustic17.zip
 64,kmr,yes,update mod,Kurmanji Kurdish,Northern Kurdish,,Kurmanji,87877,52928,98.27,59.19,45.0,14.19,,,yes,kmr-Latn,,,,,
 65,kmr,yes,update mod,Kurmanji Kurdish,Northern Kurdish,,Kurmanji,87877,52928,98.27,59.19,45.0,14.19,,,yes,kmr-Latn-red,,,,,
 78,mt,yes,realign,Maltese,Maltese,Maltese,Maltese,13078,6434,17.21,8.46,8.0,0.46,compromised,mt,yes,mlt-Latn,mlt,,,,
@@ -59,7 +59,7 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 74,mr,,add,Marathi,Marathi,,Marathi,15966,10880,27.46,18.71,,,,,yes,mar-Deva,,,,,
 13,bn,,added/uploaded,Bengali,Bengali,,Bengali,1049552,44021,1271.91,53.34,,,,,yes,ben-Beng,ben,bn_epi_spkr17.tsv,bn_epi_lexicon17.txt,bn_epi_acoustic17.zip,bn_epi_textgrids17_acoustic17.zip
 14,bn,,added/uploaded,Bengali,Bengali,,Bengali,1049552,44021,1271.91,53.34,,,,,yes,ben-Beng-red,ben,bn_epi_spkr17.tsv,bn_epi_lexicon17.txt,bn_epi_acoustic17.zip,bn_epi_textgrids17_acoustic17.zip
-140,zh-CN,,add,Chinese (China),Chinese,,,853774,184407,1059.64,228.87,,,,,yes,cmn-Hans,zho-s,,,,
+140,zh-CN,,add,Chinese (China),Chinese,,,853774,184407,1059.64,228.87,,,,,yes,cmn-Hans,zho-s,zh-CN_vxc_spkr17.tsv,zh-CN_vxc_lexicon17.txt,zh-CN_vxc_acoustic17.zip,zh-CN_vxc_textgrids17_acoustic17.zip
 27,dv,,added/uploaded,Dhivehi,Dhivehi,Maldivian,,45647,27562,64.15,38.73,,,yes,dv,,,,dv_xpf_spkr16.tsv,dv_xpf_lexicon16.txt,dv_xpf_acoustic16.zip,dv_xpf_textgrids16_acoustic16.zip
 41,gl,,add,Galician,Galician,,,48034,28488,63.35,37.57,,,,,,,glg,,,,
 60,rw,,add,Kinyarwanda,Kinyarwanda,,Kinyarwanda,1716022,1438767,2383.98,1998.8,,,,,yes,kin-Latn,,,,,
@@ -81,7 +81,7 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 23,da,,add,Danish,Danish,,,10954,10137,12.51,11.57,,,,,,,dan,,,,
 32,et,,add,Estonian,Estonian,,,32043,24358,59.94,45.56,,,,,,,est,,,,
 35,fi,,add,Finnish,Finnish,,,15374,9283,19.7,11.89,,,,,,,fin,,,,
-70,lt,,add,Lithuanian,Lithuanian,,,17749,16420,25.17,23.28,,,,,,,lit,,,,
+70,lt,,added/uploaded,Lithuanian,Lithuanian,,,17749,16420,25.17,23.28,,,,,,,lit,lt_chr_spkr17.tsv,lt_chr_lexicon17.txt,lt_chr_acoustic17.zip,lt_chr_textgrids17_acoustic17.zip
 109,sr,,add,Serbian,Serbian,,,9163,5712,6.42,4.0,,,,,,,srp,,,,
 103,sk,,add,Slovak,Slovak,Slovak,,26581,19316,26.34,19.14,,,compromised,sk,,,slo,,,,
 104,sl,,add,Slovenian,Slovenian,,,14221,10715,14.75,11.11,,,,,,,slv,,,,
@@ -93,8 +93,8 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 9,az,,,Azerbaijani,Azerbaijani,Azerbaijani,Azerbaijani,301,102,0.44,0.15,,,yes,az,yes,aze-Latn,aze,,,,
 11,bas,,,Basaa,Basa (Cameroon),,,2291,1757,2.81,2.15,,,,,,,,,,,
 15,br,,,Breton,Breton,,,29942,14564,26.39,12.83,,,,,,,,,,,
-138,yue,,add,Cantonese,Yue Chinese,,,162948,21023,174.74,22.54,,,,,yes,yue-Latn,yue,,,,
-141,zh-HK,,add,Chinese (Hong Kong),Chinese,,,119070,92436,138.0,107.13,,,,,yes,yue-Latn,yue,,,,
+138,yue,,added/uploaded,Cantonese,Yue Chinese,,,162948,21023,174.74,22.54,,,,,yes,yue-Latn,yue,yue_chr_spkr17.tsv,yue_chr_lexicon17.txt,yue_chr_acoustic17.zip,yue_chr_textgrids17_acoustic17.zip
+141,zh-HK,,added/uploaded,Chinese (Hong Kong),Chinese,,,119070,92436,138.0,107.13,,,,,yes,yue-Latn,yue,zh-HK_chr_spkr17.tsv,cantonese_chr_lexicon17.txt,zh-HK_chr_acoustic17.zip,zh-HK_chr_textgrids17_acoustic17.zip
 28,dyu,,,Dioula,Dyula,,,235,128,0.4,0.21,,,,,,,,,,,
 30,en,,,English,English,,English‡,2381272,1779770,3437.49,2569.19,,,,,yes,eng-Latn,eng-uk/eng-us,,,,
 81,myv,,,Erzya,Erzya,Erzya,,1998,1971,3.19,3.15,,,compromised,myv,,,,,,,
@@ -128,8 +128,8 @@ Unnamed: 0,code_cv,lrec2022,vxcAction,name_cv,name_iso639-3,name_xpf,name_epi,cl
 108,sc,,,Sardinian,Sardinian,,,1530,1169,1.91,1.46,,,,,,,,,,,
 105,es,,,Spanish,Spanish,Spanish,Spanish,1645388,403557,2204.26,540.62,,,yes,es,yes,spa-Latn,spa-latin/spa-me,,,,
 106,es,,,Spanish,Spanish,Spanish,Spanish,1645388,403557,2204.26,540.62,,,yes,es,yes,spa-Latn-eu,spa-latin/spa-me,,,,
-82,nan-tw,,,Taiwanese (Minnan),,,Hokkien,27817,7623,19.97,5.47,,,,,yes,nan-Latn,,,,,
-83,nan-tw,,,Taiwanese (Minnan),,,Hokkien,27817,7623,19.97,5.47,,,,,yes,nan-Latn-tl,,,,,
+82,nan-tw,,add,Taiwanese (Minnan),,,Hokkien,27817,7623,19.97,5.47,,,,,yes,nan-Latn,,,,,
+83,nan-tw,,add,Taiwanese (Minnan),,,Hokkien,27817,7623,19.97,5.47,,,,,yes,nan-Latn-tl,,,,,
 139,zgh,,,Tamazight,Standard Moroccan Tamazight,,,274,262,0.25,0.24,,,,,,,,,,,
 116,te,,,Telugu,Telugu,Telugu,Telugu,346,103,0.45,0.13,,,yes,te,yes,tel-Telu,,,,,
 118,tig,,,Tigre,Tigre,,,397,51,0.45,0.05,,,,,,,,,,,
