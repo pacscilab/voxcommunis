@@ -116,6 +116,8 @@ def contains_cyrillic(text):
 def create_textgrid(snd_file, dur, speaker_id, transcript):
     # Create the textgrid
     tg = textgrid.Textgrid()
+    # Remove some punctuations from the transcript
+    transcript = re.sub(r'،|؟|؛', ' ', transcript)
     # Add a new tier to the TextGrid
     speaker_tier = textgrid.IntervalTier(speaker_id, # tier name
                                         [(0.05, dur-0.05, transcript)], # interval start time, end time, and the transcript
@@ -165,19 +167,17 @@ def process_words(df, lang_code):
     # Read in the validated.tsv file and get the orthographical transcriptions of the utterances
     words = df['sentence']
     words = words[words.notnull()]
-    #print(words)
 
     # Remove the punctuations
     if lang_code == 'uz':
         words = pd.Series([remove_uz_punct(word) for word in words.tolist()])
     else:
-        words = words.str.replace('[_|,|。|、|「|」|\[|\]\%|\(|\)|（|）|・|？|!|~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+        words = words.str.replace('[\#|\*|\^|<|>\@|،|؟|_|,|。|、|「|」|\[|\]\%|\(|\)|（|）|・|？|!|~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
 
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
-    #print(words)
     # Remove all non characters or digits
-    words = words.str.replace('[\d\s\W]+', ' ', regex=True)
+    words = words.str.replace('[\d\s]+', ' ', regex=True)
     # To lower case
     words = words.str.lower()
 
@@ -223,13 +223,20 @@ def epi_g2p(words, epi_code, dict_file_path):
 
         # Separate any identical ipa symbols repeated twice with a white space
         phone = re.sub(r'([\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF])\1', r'\1 \1', phone)
-        if epi_code == 'est-Latn':
-            phone = re.sub('ː ː', 'ːː', phone) # String the super long symbol back
+
+        if epi_code == 'kmr-Latn':
+            phone = re.sub('a', 'ɑ', phone) # Kurmanji Kurdish low vowel is /ɑ/
+        elif epi_code == 'mar-Deva':
+            phone = re.sub('ऑ', 'ɔ', phone) # ऑ is ɔ in Marathi
+            phone = re.sub('ऍ', 'ɛ', phone)
+            phone = re.sub('ॲ', 'æ', phone)
+        
         phone = re.sub(r'ˈ|ˌ', '', phone) # strip the stress markers
 
         # Get rid of the non-IPAs from the output
         only_ipa = re.findall(ipa_symbols, phone)
         clean_phone = ' '.join(only_ipa)
+        clean_phone = re.sub('\s+', ' ', clean_phone)
 
         lex_dict[word] = clean_phone
         if phone != clean_phone:
@@ -434,6 +441,15 @@ def remove_non_mongolian(words):
         if re.match(r'^[а-яёүөӨҮА-ЯЁ\s]+$', word):  # Check if word contains only Cyrillic characters
             cyrillic_words.append(word)
     return cyrillic_words
+
+# Filter out Kinyarwanda words
+def is_kinyarwanda_word(word):
+    # Define Kinyarwanda letters
+    kin_letters = re.compile(r'^[abcdefghijkmnoprstuvwyz]+$', re.IGNORECASE)
+    # Check if a word only contains these letters
+    return bool(kin_letters.match(word))
+def remove_non_kin(words):
+    return [word for word in words if is_kinyarwanda_word(word)]
 
 # Filter Serbian
 def is_serbian_word(word):
@@ -784,6 +800,8 @@ def remove_unwanted_words(word_list, lang_code, is_cjk, if_cyrl):
         filtered_words = [remove_non_chinese(word) for word in filtered_words]
     elif lang_code == 'ja': # filter Japanese
         filtered_words = remove_non_japanese(filtered_words)
+    elif lang_code == 'rw': # filter Kinyarwanda
+        filtered_words = remove_non_kin(filtered_words)
 
     filtered_words = [word for word in filtered_words if word.strip() != '']
     return filtered_words
