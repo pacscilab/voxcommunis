@@ -241,6 +241,7 @@ def filter_ipa_symbols(input_string):
 
 def epi_cjk_g2p(words, epi_code, dict_file_path):
     import epitran
+    epi = epitran.Epitran(epi_code)
 
     if epi_code == 'jpn-Ktkn': # G2P Japanese
         kks = pykakasi.kakasi()
@@ -288,7 +289,7 @@ def epi_cjk_g2p(words, epi_code, dict_file_path):
         for word in words:
             if epi_code == 'yue-Latn': # G2P Cantonese
                 jyutping = pycantonese.characters_to_jyutping(word)[0][1]
-                if jyutping is None:
+                if jyutping.strip() == '':
                     phone = ''
                 else:
                     phone = epi.transliterate(jyutping)
