@@ -67,7 +67,7 @@
 
     <h1> Hausa </h1>
     <p>File created by: Ishwarya Sutharsan<br>
-    Updated: 29.07.2024 </p>
+    Updated: 09.09.2024 </p>
     <p>Common Voice version 16</p>
 
     <h1> Background </h1>
@@ -77,6 +77,7 @@
     <ul>
         <li> Hausa speakers are mostly found in southern Niger and northern Niger. The language is used as a lingua franca by non-native speakers in most of northern Nigeria, southern Niger,
           northern Cameroon, northern Ghana, northern Benin, northern Togo, southern Chad and parts of Sudan. </li>
+        <li>Writing system in CV: Boko (latin based and different by country fr/en influence) Neither length nor tone are written and thus also omitted in the G2P.</li>
     </ul>
     <h1> Phonology </h1>
     <h2> Consonants </h2>
@@ -202,8 +203,14 @@
           <li>ɓ<br>
           <li>ʔʲ<br></li>
         </ul>
-
-
+    
+    <p>Pipeline performance:<br></p>
+        <ul>
+        <li>Geminate /n/ and /m/. We require an executive decision about gemminate consonants and vowels. Always merge or keep intact. Depending on the G2P the decision may already have been made to concatenate geminates...</li>
+        <li>All in all there is a time-lag for all consonants to start slightly later than they should and end somewhat after they should have (quite consistently between 0.02s and 0.03s). All cannibalize a bit on the vowels, but especially /d/ which in turn eats up a substantial part of any subsequent V.</li>
+        <li> All in all the G2P looks quite believable in terms of consonants. (Does not take into account stuff like _#b | n -> m but the labels are consistent)</li>
+        </ul>
+        
     <h2> Vowels </h2>
     <ul>
         <li>.....</li></ul>
@@ -235,6 +242,12 @@
         </tbody>
     </table>
 
+    <p>Pipeline performance:<br></p>
+    <ul>
+    <li>There is generally a lot going on with the vowels which we cannot handle: Measures which depend on a correct label won't give adequate results.</li>
+    <li>In many analyses, Hausa has diphtongs. Our G2P does not support this.  </li>
+    <li>Many vowel labels do mismatch with the pronunciation. Two possible explanations. (i) dialectal variation. Hausa is a lingua franca across several countries and dialects are to be expected. (ii) Deficient writing system. The Latin based system can write tones, but usually does not. What I hear as a different vowel is a high/low or long/short problem, but underlyingly the labels are correct.</li>
+    </ul>
 
     <h3> Overview of frequencies </h3>
     <h4>Vowels frequency:</h4>
