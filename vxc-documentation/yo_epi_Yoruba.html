@@ -269,6 +269,34 @@
     <p> Consonant count: 18  </p>
     <p> Total count of all phoneme frequencies: 26952</p>
 
+<h>Common Voice Data Audit:</h>
+    <ul>
+    <li>UTF: Yoruba uses up to two diacritics per character (vowels). Currently the first is merged with the vowel into a single UTF-entity while the second is a floating entity. May look weird in most editors (incl. praat) but nothing to worry about.</li>
+    <li>Two orthographies exist Nigeria and Benin. Our G2P may not be able to handle Nigeria (which may be for the better as they seem to have a slightly different phonology). Watch out for the graphemes {ɛ, ɔ, kp, sh} which only occur in Benin writing.</li>
+    </ul>
+
+<h>Vowels:</h>
+    <ul>
+    <li>Tones: tone, (especially low?) creates a situation where vowel segementations are interrupted too early for a voiced plosive.</li>
+    <li>In theory Yoruba has register tone. But c.f. náà or even mẹ́ẹ̀ẹ́dọ́gún. Since we do not include tone, it may be interesting to see what MFA does here, as it has to search for two subsequent vowels, which are "the same".</li>
+    <li>C.f. recording 36839740 "ayeye" for MFA failing at trying to make sense of vowel length and tone at once.</li>
+    <li>Nasals are always problematic. Better to always include two options, regardless of orthography: a nasalised V or Vn. Especially ĩ does not seem to be represented consistently in the orthography. Or nasals just sneak in after vowels for morphophonetic reasons?</li>
+    </ul>
+
+<h>Consonants:</h>
+    <ul>
+    <li>n: Vn # nV -> ṽ#nV <br>
+    <li>    r: Does only appear in intervocalic position? Usually it sounds like an [ɰ] to me.</li>
+    <li>    t: In female speech this is often [ts]. Not sure about male speech yet...</li>
+    <li>    ɡ͡b / k͡p: unsure yet. Keep an eye out for complex consonants in other languages.</li>
+    </ul>
+
+<h>Audio Quality:</h>
+<p>
+    Very mixed. Some crisp, some sound like a Java speaking on a broken transmitter. <br>
+    Files are very long in comparison to other languages. (Yoruba seems to have a pretty low speech rate?)
+</p>    
+    
     <h1>References</h1>
     <p> Ahn, E., Zhang, M., Baker, A., & Chodroff, E. (2024, July 25). VoxCommunis Corpus. https://doi.org/10.17605/OSF.IO/T957V </p>
     <p> David R. Mortensen, Siddharth Dalmia, and Patrick Littell. 2018. Epitran: Precision G2P for many languages. In Proceedings of the Eleventh International Conference on Language Resources and Evaluation (LREC 2018), Paris, France. European Language Resources Association (ELRA). </p>
