@@ -1,5 +1,5 @@
 # Import modules
-import os, re, csv, sys
+import os, re, csv
 import pandas as pd
 # Turn Copy-On-Write on
 pd.options.mode.copy_on_write = True
@@ -33,8 +33,9 @@ def find_lang_dir(lang_code, ver, common_voice_dir):
         return folder_path, clip_info_path, validated_log, validated_recs_path
 
 
-def detect_cjk(lang_code):
-    is_cjk = lang_code in ['ja', 'ko', 'yue', 'zh-CN', 'zh-HK', 'zh-TW', 'nan-tw']
+def detect_cjk_thai(lang_code):
+    is_cjk = lang_code in ['ja', 'ko', 'yue', 'zh-CN', 'zh-HK', 'zh-TW', 'nan-tw', 'th']
+    return is_cjk
 
 def show_files(language_dir, acs_mod_path, dict_file_path, spkr_file_path, textgrid_folder_path):
     print("Processing the folder:\t", language_dir)

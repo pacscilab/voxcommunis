@@ -1,10 +1,8 @@
-import re, csv, subprocess, unicodedata, os, shutil, zipfile, tarfile, multiprocessing
+import re, csv, subprocess, os, shutil
 import pandas as pd
 import numpy as np
 from praatio import textgrid
 from pathlib import Path
-# Multithread pool
-from concurrent.futures import ThreadPoolExecutor
 
 # Tokenize IPA
 from lingpy import ipa2tokens
@@ -17,6 +15,7 @@ def read_in_log(path):
                           dtype = {
                               'client_id': 'str',
                               'path': 'str',
+                              'sentence_id': 'str',
                               'sentence': 'str',
                               'up_votes': 'int16',
                               'down_votes': 'int16',
@@ -163,20 +162,30 @@ def remove_uz_punct(text):
     return final_text
 
 # Get words from transcripts:
-def process_words(df, lang_code):
+def process_words(df, lang_code, is_cjk):
     # Read in the validated.tsv file and get the orthographical transcriptions of the utterances
-    words = df['sentence']
+    if not is_cjk:
+        words = df['sentence']
+    else:
+        words = df['sentence_tok']
     words = words[words.notnull()]
 
     # Remove the punctuations
     if lang_code == 'uz':
         words = pd.Series([remove_uz_punct(word) for word in words.tolist()])
     else:
-        words = words.str.replace('[\#|\*|\^|<|>\@|،|؟|_|,|。|、|「|」|\[|\]\%|\(|\)|（|）|・|？|!|~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n| \' ]+', ' ', regex=True)
+        words = words.str.replace('[\'|*|،|؟|¿|_|,|。|、|「|」|\[|\]\%|\(|\)|（|）|・|？|!|~|·|‧|⋯|⠀|︰|﹔|﹖|（|）|－|ㄧ|．|／|ａ|ｂ|，|。|！|～|￼|、|？|“|”|：|；|‘|’|…|《|》|【|】|「|」|=|•|\\\\|՜|։|՝|՛|।|›|‹|/|\(|\)|\[|\]|,|‚|።|፡|፣|.|،|!|?|+|\"|″|″|×|°|¡|“|⟨|⟩|„|→|‑|–|-|-|−|-|—|‒|۔|\$|ʻ|ʿ|ʾ|`|´|’|‘|«|»|;|؛|:|”|؟|&|\%|…|\t|\n]+', ' ', regex=True)
+        words = words.str.replace("''", ' ')
+        words = words.str.replace(r"^\'", ' ', regex = True)
+        words = words.str.replace(r"\'$", ' ', regex = True)
+
+    if lang_code == 'fr':
+        words = words.str.replace("^\'", ' ', regex=True)
+        words = words.str.replace("\'$", ' ', regex=True)
 
     # Remove the arabic punctuations and combining marks
     words = words.str.replace('[ء| ؓ| ؑ]+', ' ', regex=True)
-    # Remove all non characters or digits
+    # Remove all numbers or white space
     words = words.str.replace('[\d\s]+', ' ', regex=True)
     # To lower case
     words = words.str.lower()
@@ -201,7 +210,7 @@ def process_words(df, lang_code):
 # G2P
 
 # Epitran
-ipa_symbols = re.compile(r'[\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF\u1AB0-\u1AFF\u1DC0-\u1DFF\u2000-\u206F\u2070-\u209F\u2190-\u21FF\u2C60-\u2C7F\uA700-\uA71F]+|\s')
+ipa_symbols = re.compile(r'[ẽ\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF\u1AB0-\u1AFF\u1DC0-\u1DFF\u2000-\u206F\u2070-\u209F\u2190-\u21FF\u2C60-\u2C7F\uA700-\uA71F\u0300-\u036F]+|\s')
 
 def filter_ipa_symbols(input_string):
     filtered_string = ''.join(char for char in input_string if ipa_symbols.match(char))
@@ -218,8 +227,25 @@ def epi_g2p(words, epi_code, dict_file_path):
         # Conversion
         phone = epi.transliterate(word)
         phone = re.sub(":", "ː", phone)
+        if len(phone) > 0:
         # Separate the IPAs with white spaces
-        phone = ' '.join(ipa2tokens(phone))
+            phone = ' '.join(ipa2tokens(phone))
+
+        if epi_code == 'tam-Taml':
+            tam_sub = {
+                'ஃ p': 'f',
+                'ஃ t̪': 'tˤ',
+                'ஃ k': 'x',
+                'ஃ s': 'k s',
+                'ஃ ʋ': 'w',
+                'ஃ ʂ': 'sˤ',
+                'ஃ d͡ʒ': 'z',
+                'ஃ r': 'ɹ̥'
+            }
+            pattern = re.compile('|'.join(map(re.escape, tam_sub.keys())))
+            def sub_tam(match):
+                return tam_sub[match.group(0)]
+            phone = pattern.sub(sub_tam, phone)
 
         # Separate any identical ipa symbols repeated twice with a white space
         phone = re.sub(r'([\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF])\1', r'\1 \1', phone)
@@ -230,10 +256,16 @@ def epi_g2p(words, epi_code, dict_file_path):
             phone = re.sub('ऑ', 'ɔ', phone) # ऑ is ɔ in Marathi
             phone = re.sub('ऍ', 'ɛ', phone)
             phone = re.sub('ॲ', 'æ', phone)
+        elif epi_code == 'tha-Thai':
+            phone = re.sub('ː([iɯueɤoɛaɔ]+ː)', 'ː \1', phone)
+        elif epi_code == 'ori-Orya':
+            phone = re.sub(' ଃ', 'h', phone)
         
         phone = re.sub(r'ˈ|ˌ', '', phone) # strip the stress markers
 
         # Get rid of the non-IPAs from the output
+        phone = re.sub("'", ' ', phone)
+        phone = re.sub('[ ]+', ' ', phone)
         only_ipa = re.findall(ipa_symbols, phone)
         clean_phone = ' '.join(only_ipa)
         clean_phone = re.sub('\s+', ' ', clean_phone)
@@ -427,6 +459,14 @@ def contains_files(folder_path):
 ################### Text processing ########################
 ############################################################
 
+def is_korean_word(word):
+    # This regular expression matches Korean characters (Hangul).
+    # It includes Hangul syllables (U+AC00 to U+D7AF) and Jamo (U+1100 to U+11FF) ranges.
+    korean_regex = re.compile(r'^[\u1100-\u11FF\uAC00-\uD7AF]+$')
+    return korean_regex.match(word) is not None
+def remove_non_korean(words_list):
+    return [word for word in words_list if is_korean_word(word)]
+
 def remove_non_chinese(text):
     # This pattern matches any character not in the specified Unicode blocks of Chinese characters
     pattern = r'[^\u4e00-\u9fff\u3400-\u4dbf]'
@@ -441,15 +481,6 @@ def remove_non_mongolian(words):
         if re.match(r'^[а-яёүөӨҮА-ЯЁ\s]+$', word):  # Check if word contains only Cyrillic characters
             cyrillic_words.append(word)
     return cyrillic_words
-
-# Filter out Kinyarwanda words
-def is_kinyarwanda_word(word):
-    # Define Kinyarwanda letters
-    kin_letters = re.compile(r'^[abcdefghijkmnoprstuvwyz]+$', re.IGNORECASE)
-    # Check if a word only contains these letters
-    return bool(kin_letters.match(word))
-def remove_non_kin(words):
-    return [word for word in words if is_kinyarwanda_word(word)]
 
 # Filter Serbian
 def is_serbian_word(word):
@@ -596,18 +627,26 @@ def is_hindi_word(word):
 def remove_non_hindi(word_list):
     hindi_word_list = [word for word in word_list if is_hindi_word(word)]
     return hindi_word_list
-    
-# Filter out unwanted CJK characters in non-CJK texts
-# Regular expression for matching CJK characters
 
 
 # Filter function to check if CJK characters are in a word
-def contains_cjk(word):
-    cjk_pattern = re.compile('[\u4e00-\u9fff\u3400-\u4dff\uac00-\ud7af\u3040-\u309f\u30a0-\u30ff]')
-    return cjk_pattern.search(word) is not None
-def remove_cjk(words):
+def contains_only_cjk_thai(word):
+    cjk_range = re.compile(r'[\u4E00-\u9FFF\u3400-\u4dff]')
+    hangul_range = re.compile(r'[\uAC00-\uD7AF]')
+    hiragana_range = re.compile(r'[\u3040-\u309F]')
+    katakana_range = re.compile(r'[\u30A0-\u30FF]')
+    thai_range = re.compile(r'[\u0E00-\u0E7F]')
+    for char in word:
+        if not (cjk_range.match(char) or
+                hangul_range.match(char) or 
+                hiragana_range.match(char) or 
+                katakana_range.match(char) or 
+                thai_range.match(char)):
+            return False
+    return True
+def remove_cjk_thai(words):
     # Use list comprehension to filter out words containing CJK or non-Latin letters
-    filtered_words = [word for word in words if not contains_cjk(word)]
+    filtered_words = [word for word in words if not contains_only_cjk_thai(word)]
     filtered_words = list(filter(None, filtered_words))
     return filtered_words
 
@@ -739,12 +778,37 @@ def is_chinese_word(word):
     # This regex checks if all characters in the string are within the Chinese character ranges
     return re.fullmatch(r'[\u4E00-\u9FFF\u3400-\u4DBF\u20000-\u2A6DF]+', word)
 
+def is_french(word):
+    french_char_regex = re.compile(r'^[a-zA-ZÀ-ÿŒœÆæÇç\']+$')
+    # Return True if the word contains only French characters
+    return bool(french_char_regex.match(word))
+
+def is_persian(word):
+    persian_char_regex = re.compile(r'^[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]+$')
+    return bool(persian_char_regex.match(word))
+
+# Define a function to check if a word is Tamil
+def is_tamil(word):
+    # Tamil Unicode range: U+0B80 to U+0BFF
+    tamil_range = re.compile(r'^[\u0B80-\u0BFF]+$')
+    return tamil_range.match(word)
+
+# Kinyarwanda
+def is_kinyarwanda(word):
+    kinyarwanda_letters = set("aeioubcdfghjklmnprstvwyz'")
+    return all(char.lower() in kinyarwanda_letters for char in word)
+
+# Regular expression to match Belarusian words (Cyrillic characters)
+belarusian_pattern = re.compile(r'^[\u0400-\u04FF\u0456\u045E\u0491\']+$')
+
+################################################################################################################################
+################################################################################################################################
 
 # Filter out unwanted words for Common Voice languages:
 def remove_unwanted_words(word_list, lang_code, is_cjk, if_cyrl):
     if not is_cjk:
         # Filter out unwanted CJK words
-        filtered_words = remove_cjk(word_list)
+        filtered_words = remove_cjk_thai(word_list)
     else:
         # Otherwise remove the Latin letters
         filtered_words = [remove_latin(word) for word in word_list if remove_latin(word)]
@@ -800,8 +864,21 @@ def remove_unwanted_words(word_list, lang_code, is_cjk, if_cyrl):
         filtered_words = [remove_non_chinese(word) for word in filtered_words]
     elif lang_code == 'ja': # filter Japanese
         filtered_words = remove_non_japanese(filtered_words)
-    elif lang_code == 'rw': # filter Kinyarwanda
-        filtered_words = remove_non_kin(filtered_words)
+    elif lang_code == 'ko': # filter Korean
+        filtered_words = remove_non_korean(filtered_words)
+    elif lang_code == 'fr': # filter French
+        filtered_words = [word for word in filtered_words if is_french(word)]
+        filtered_words = [re.sub(r'^\'|\'$', '', word) for word in filtered_words]
+        filtered_words = [word for word in filtered_words if word.strip() != '']
+    elif lang_code == 'fa': # Filter Persian
+        filtered_words = [word for word in filtered_words if is_persian(word)]
+    elif lang_code == 'ta': # Filter out non-Tamil words
+        filtered_words = [word for word in filtered_words if is_tamil(word)]
+    elif lang_code == 'rw':
+        filtered_words = [word for word in filtered_words if is_kinyarwanda(word)]
+    elif lang_code == 'be':
+        filtered_words = [word for word in filtered_words if belarusian_pattern.match(word)]
+
 
     filtered_words = [word for word in filtered_words if word.strip() != '']
     return filtered_words

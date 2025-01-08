@@ -1,17 +1,14 @@
-import re, csv, subprocess, unicodedata, os, shutil, zipfile, tarfile, multiprocessing
+import re, csv, os, shutil, epitran, subprocess
 import pandas as pd
 import numpy as np
 from praatio import textgrid
 from pathlib import Path
-# Multithread pool
-from concurrent.futures import ThreadPoolExecutor
-
 
 # Japanese tokenizer
 from fugashi import Tagger
 import pykakasi
 # Korean tokenizer
-from konlpy.tag import Okt
+#from konlpy.tag import Okt
 # Cantonese tokenizer
 import pycantonese
 # Traditional Chinese tokenizer
@@ -24,6 +21,10 @@ from pypinyin import pinyin, Style
 from pinyin_to_ipa import pinyin_to_ipa
 # Taiwanese Southern Min
 import taibun
+# Korean G2P
+from g2pk2 import G2p
+# Thai Tokenizer
+from pythainlp import word_tokenize
 
 # Tokenize IPA
 from lingpy import ipa2tokens
@@ -32,6 +33,17 @@ from lingpy import ipa2tokens
 ##################################################################################################
 
 # The function to tokenize CJK languages:
+# Convert between simplified Chinese and traditional Chinese
+def convert_chn(df, lang_code):
+    if lang_code in ['zh-CH', 'yue', 'zh-HK', 'zh-TW', 'nan-tw']:
+        if lang_code == 'zh-CN':
+            converted = [chinese_converter.to_simplified(text) for text in df['sentence'].astype('str').tolist()]
+            df['sentence'] = converted
+        elif lang_code in ['yue', 'zh-HK', 'zh-TW', 'nan-tw']:
+            converted = [chinese_converter.to_traditional(text) for text in df['sentence'].astype('str').tolist()]
+            df['sentence'] = converted
+    return df
+
 def tok_cjk(df, lang_code):
     sentences = df['sentence'].astype('str').tolist()
 
@@ -50,12 +62,7 @@ def tok_cjk(df, lang_code):
         tokenized = [re.sub(r' (派|所|達|語|的|町|県|市|町|区|村|州|学|て|方|機)', r'\1', text) for text in tokenized]
         tokenized = [re.sub(r'(何|一|二|三|四|五|六|七|八|九|十) (年|月|日|回|階)', r'\1\2', text) for text in tokenized]
         tokenized = [re.sub(r' (新) ', r' \1', text) for text in tokenized]
-    
-    # Korean
-    elif lang_code == 'ko':
-        okt = Okt()
-        tokenized = [' '.join(okt.morphs(sentence)) for sentence in sentences]
-    
+
     # Cantonese
     elif lang_code in ['yue', 'zh-HK']:
         tokenized = [' '.join(pycantonese.segment(sentence)) for sentence in sentences]
@@ -77,28 +84,26 @@ def tok_cjk(df, lang_code):
         sentences = df['sentence'].str.replace(r'[^\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', '', regex = True).tolist()
         tokenized = [' '.join(t.tokenise(sent)) for sent in sentences]
 
+    elif lang_code == 'th':
+        tokenized = [' '.join(word_tokenize(sent, keep_whitespace=False)) for sent in sentences]
+    
+    elif lang_code == 'ko':
+        ko_g2p = G2p()
+        tokenized = [ko_g2p(text) for text in df['sentence'].astype('str').tolist()]
+
     # append to the dataframe
     df['sentence_tok'] = tokenized
     df.drop(columns = 'sentence', axis = 1, inplace = True)
 
     return df
 
-# Convert between simplified Chinese and traditional Chinese
-def convert_chn(df, lang_code):
-    if lang_code in ['zh-CH', 'yue', 'zh-HK', 'zh-TW', 'nan-tw']:
-        if lang_code == 'zh-CN':
-            converted = [chinese_converter.to_simplified(text) for text in df['sentence'].astype('str').tolist()]
-            df['sentence'] = converted
-        elif lang_code in ['yue', 'zh-HK', 'zh-TW', 'nan-tw']:
-            converted = [chinese_converter.to_traditional(text) for text in df['sentence'].astype('str').tolist()]
-            df['sentence'] = converted
-    return df
 
 def read_in_log(path):
     df = pd.read_csv(path, sep = '\t', quoting=csv.QUOTE_NONE, low_memory = False,
                           dtype = {
                               'client_id': 'str',
                               'path': 'str',
+                              'sentence_id': 'str',
                               'sentence': 'str',
                               'up_votes': 'int16',
                               'down_votes': 'int16',
@@ -164,6 +169,7 @@ def remap_cjk_spkr(lang_dir, spkr_file_path, lang_code, output=True):
     converted_sentence = convert_chn(unique_sentences, lang_code)
     tokenized_sentences = tok_cjk(converted_sentence, lang_code)
     validated = pd.merge(validated, tokenized_sentences, on= 'sentence_id', how = 'left')
+
     # Rarrange the columns so that the tokenized sentence is next to the original ones.
     cols = list(validated.columns)
     cols.remove('sentence_tok')
@@ -240,7 +246,6 @@ def filter_ipa_symbols(input_string):
     return filtered_string if len(filtered_string) == len(input_string) else ''
 
 def epi_cjk_g2p(words, epi_code, dict_file_path):
-    import epitran
     epi = epitran.Epitran(epi_code)
 
     if epi_code == 'jpn-Ktkn': # G2P Japanese
@@ -284,12 +289,13 @@ def epi_cjk_g2p(words, epi_code, dict_file_path):
         with open(dict_file_path, 'w') as f:
             for i in trans:
                 f.write(i + '\n')
+
     else:
         lex_dict = {}
         for word in words:
             if epi_code == 'yue-Latn': # G2P Cantonese
                 jyutping = pycantonese.characters_to_jyutping(word)[0][1]
-                if jyutping.strip() == '':
+                if jyutping is None:
                     phone = ''
                 else:
                     phone = epi.transliterate(jyutping)
@@ -300,13 +306,19 @@ def epi_cjk_g2p(words, epi_code, dict_file_path):
                     phone = re.sub(r'j (i|y)', r'\1', phone) # get rid of j before i or y 
                     phone = re.sub('w u', 'u', phone)  # get rid of w before u
                     phone = re.sub(r'(k|kʰ)ʷ ', r'\1 ʷ', phone) # move the w onglide to group it with the rime instead of the consonant
-            else: # Anyother langauges
+            elif epi_code == 'kor-Hang':
                 phone = epi.transliterate(word)
-                phone = re.sub(":", "ː", phone)
+                phone = ' '.join(ipa2tokens(phone, merge_vowels = False))
+                phone = re.sub('d ʑ', 'd͡ʑ', phone)
+            else: # Any other langauges
+                phone = epi.transliterate(word)  
                 phone = ' '.join(ipa2tokens(phone))
 
+            phone = re.sub(":", "ː", phone)
             # Separate any identical ipa symbols repeated twice with a white space
             phone = re.sub(r'([\u0020-\u007E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F\u0250-\u02AF\u02B0-\u02FF\u0300-\u036F\u0370-\u03FF])\1', r'\1 \1', phone)
+            
+            # Estonian super long vowels
             if epi_code == 'est-Latn':
                 phone = re.sub('ː ː', 'ːː', phone) # String the super long symbol back
             phone = re.sub(r'ˈ|ˌ', '', phone) # strip the stress markers
@@ -376,3 +388,48 @@ def nan_g2p(words, dict_file_path):
             phone = re.sub(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', '', phone)
             if phone != '':
                 f.write(word+'\t'+phone+'\n')
+
+# Korean G2P
+def kor_xpf(words, xpf_translater_path, rule_file_path, verify_file_path, word_file_path, inter_file_path, dict_file_path):
+    from g2pk import G2p # type: ignore
+    kor_g2p = G2p()
+    # Figure out Korean phonology hidden in their orthography
+    kor_conv = [kor_g2p(word) for word in words]
+    kor_conv_words = inter_file_path
+    # Save the interim conversion to a file
+    with open(kor_conv_words, 'w') as word_file:
+        for word in kor_conv:
+            word_file.write(word + "\n")
+            
+    # XPF convert Korean to IPA using the interim file
+    g2p_cmd = ["python", xpf_translater_path, "-l", rule_file_path, "-c", verify_file_path, "-r", kor_conv_words] # XPF translating command that will be sent to subprocess.run() to execute.
+
+    with open(dict_file_path,'w') as dict_file:
+        subprocess.run(g2p_cmd, stdout = dict_file) # stdout = ... means to send the output to the file (so you have to open this file first as above)
+
+    # This is to get rid of all the '@' in the lexicon (if there is any). @ means that XPF G2P failure
+    with open(dict_file_path, "r") as dict_file:
+        dict = dict_file.read().split("\n")
+
+    with open(dict_file_path, 'w') as dict_file:
+        for i in dict:
+            i = re.sub(" ː", "ː", i)
+            # Get rid of words that contain sounds XPF can't figure out
+            if '@' not in i:
+                dict_file.write(i + "\n")
+    
+    # Append the converted IPA transcription to the original word list file.
+    kor_ipa = []
+    with open(dict_file_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            parts = line.split('\t')
+            if len(parts) == 2:
+                _, string2 = parts
+                kor_ipa.append(string2)
+    with open(word_file_path, 'r') as f:
+        kor_words = f.readlines()
+        kor_words = [word.strip() for word in kor_words]
+    with open(dict_file_path, 'w') as f:
+        for word, ipa in zip(kor_words, kor_ipa):
+            f.write(word+'\t'+ipa+'\n')
