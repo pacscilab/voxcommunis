@@ -42,6 +42,7 @@ This repository also contains the code and data used in the original paper on th
 
 Ahn, Emily, and Chodroff, Eleanor. (2022). VoxCommunis: A corpus for cross-linguistic phonetic analysis. Proceedings of the 13th Conference on Language Resources and Evaluation Conference (LREC 2022).
 
+```
 @inproceedings{ahn2022voxcommunis,
   title={Vox{C}ommunis: A corpus for cross-linguistic phonetic analysis},
   author={Ahn, Emily and Chodroff, Eleanor},
@@ -49,3 +50,4 @@ Ahn, Emily, and Chodroff, Eleanor. (2022). VoxCommunis: A corpus for cross-lingu
   pages={5286--5294},
   year={2022}
 }
+```
