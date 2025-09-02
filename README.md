@@ -1,6 +1,6 @@
 # VoxCommunis Corpus
  
-This repository contains the code for generating files in the VoxCommunis Corpus, hosted at [VoxCommunis Corpus](https://osf.io/t957v/) (DOI: 10.17605/OSF.IO/T957V). In particular, it contains the code for the processing pipeline of VoxCommunis Corpus.
+This repository contains the code for generating files in the VoxCommunis Corpus, hosted at [VoxCommunis Corpus - Hugging Face](https://huggingface.co/datasets/pacscilab/VoxCommunis) (previously hosted at [VoxCommunis Corpus - OSF](https://osf.io/t957v/), DOI: 10.17605/OSF.IO/T957V). In particular, it contains the code for the processing pipeline of VoxCommunis Corpus.
 
 ## The scripts
 
@@ -34,7 +34,7 @@ The output of the processing will contain:
 - segment duration measurements
 - vowel f0 measurements
 
-However, these output files will not be included in this GitHub repository. Please find them on the OSF repository of [VoxCommunis Corpus](https://osf.io/t957v/).
+However, these output files will not be included in this GitHub repository. Please find them on the Hugging Face repository of [VoxCommunis Corpus](https://huggingface.co/datasets/pacscilab/VoxCommunis).
 
 ## Ahn, Emily, and Chodroff, Eleanor. (2022)
 
